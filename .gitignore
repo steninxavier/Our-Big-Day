@@ -1,0 +1,21 @@
+# dependencies and build output
+/node_modules
+/.next
+/out
+
+# local environment and deployment files
+.env
+.env.local
+.env.*.local
+.vercel
+
+# generated files
+*.tsbuildinfo
+next-env.d.ts
+
+# operating system / editor files
+.DS_Store
+Thumbs.db
+.idea
+.vscode/*
+!.vscode/extensions.json
