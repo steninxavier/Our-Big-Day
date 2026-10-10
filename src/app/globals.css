@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fffaf5;
-  --foreground: #34251d;
-  --muted: #75655b;
-  --accent: #a44932;
-  --card: #ffffff;
-  --border: #eadfd7;
+  --background: #f8f4ec;
+  --foreground: #17233a;
+  --muted: #6b6c6a;
+  --accent: #b58a42;
+  --card: #fdfbf7;
+  --border: #e6dec8;
 }
 
 * {
@@ -22,7 +22,7 @@ body {
   min-width: 320px;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-jakarta), Arial, Helvetica, sans-serif;
 }
 
 a {
