@@ -37,7 +37,7 @@ Detailed Mongoose implementation and exact API payloads will be designed separat
 
 ---
 
-# 2. Database Design Liyaples
+# 2. Database Design Principles
 
 ## 2.1 Wedding is the Tenant
 
@@ -319,10 +319,10 @@ Example:
 
 ```text
 email:
-"John.Saini@gmail.com"
+"john@example.com"
 
 emailNormalized:
-"john.saini@gmail.com"
+"john@example.com"
 ```
 
 At minimum normalization should:
@@ -671,7 +671,7 @@ website: {
 Example:
 
 ```text
-john-liya-14022027
+liya-john-14022027
 ```
 
 Index:
@@ -683,7 +683,7 @@ unique(website.slug);
 If a collision occurs:
 
 ```text
-john-liya-14022027-2
+liya-john-14022027-2
 ```
 
 Once created, the slug remains stable.

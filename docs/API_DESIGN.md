@@ -64,7 +64,7 @@ HTTP Response
 
 ---
 
-# 2. API Design Liyaples
+# 2. API Design Principles
 
 ## 2.1 Explicit REST APIs
 
@@ -296,6 +296,8 @@ TOKEN_EXPIRED
 
 RATE_LIMITED
 
+SERVICE_UNAVAILABLE
+
 UPLOAD_ERROR
 
 EXTERNAL_SERVICE_ERROR
@@ -391,6 +393,9 @@ Unexpected application error.
 
 May be used when an external provider is temporarily unavailable.
 
+Atlas connectivity failures return `503 SERVICE_UNAVAILABLE` with a generic retryable
+message. Internal Atlas connection details remain in server logs only.
+
 ---
 
 # 10. Authentication Cookie
@@ -428,7 +433,7 @@ Creates an account and authenticated session.
 
 ```json
 {
-  "name": "John Saini",
+  "name": "John",
   "email": "john@example.com",
   "password": "strong-password"
 }
@@ -459,7 +464,7 @@ Set Cookie
   "data": {
     "user": {
       "id": "userId",
-      "name": "John Saini",
+      "name": "John",
       "email": "john@example.com"
     },
     "hasWedding": false
@@ -498,7 +503,7 @@ No email verification occurs.
   "data": {
     "user": {
       "id": "userId",
-      "name": "John Saini",
+      "name": "John",
       "email": "john@example.com"
     },
     "hasWedding": true
@@ -561,7 +566,7 @@ Returns current authenticated user and Wedding membership information.
   "data": {
     "user": {
       "id": "userId",
-      "name": "John Saini",
+      "name": "John",
       "email": "john@example.com"
     },
     "membership": {
@@ -584,7 +589,7 @@ If user does not yet belong to a Wedding:
   "data": {
     "user": {
       "id": "userId",
-      "name": "John Saini",
+      "name": "John",
       "email": "john@example.com"
     },
     "membership": null,
@@ -676,7 +681,7 @@ Only users without an existing Wedding Membership can use this endpoint.
 {
   "brideName": "Liya",
   "groomName": "John",
-  "title": "John & Liya",
+  "title": "Liya & John",
   "description": "We are getting married!",
   "weddingDate": "2027-02-14",
   "timeZone": "Asia/Kolkata",
@@ -750,7 +755,7 @@ Returns current Wedding.
     "id": "weddingId",
     "brideName": "Liya",
     "groomName": "John",
-    "title": "John & Liya",
+    "title": "Liya & John",
     "description": "...",
     "weddingDate": "2027-02-14",
     "timeZone": "Asia/Kolkata",
@@ -861,7 +866,7 @@ Admin and Manager can view members.
       "membershipId": "...",
       "user": {
         "id": "...",
-        "name": "John Saini",
+        "name": "John",
         "email": "john@example.com"
       },
       "role": "ADMIN",
@@ -2237,7 +2242,7 @@ Returns only public website information.
   "data": {
     "brideName": "Liya",
     "groomName": "John",
-    "title": "John & Liya",
+    "title": "Liya & John",
     "description": "...",
     "weddingDate": "2027-02-14",
     "coverImageUrl": "...",
@@ -3581,7 +3586,7 @@ Product Analytics
 
 ---
 
-# 110. API Design Liyaples to Freeze
+# 110. API Design Principles to Freeze
 
 ## Decision 1
 

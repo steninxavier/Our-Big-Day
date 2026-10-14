@@ -4,8 +4,14 @@ import { handleRoute, successResponse } from "@/shared/http/response";
 
 export async function POST() {
   return handleRoute(async () => {
-    await logout(await getSessionTokenFromCookie());
-    await clearSessionCookie();
+    try {
+      await logout(await getSessionTokenFromCookie());
+    } finally {
+      // Also discard a stale/invalid browser cookie so the next request begins
+      // in a clean signed-out state.
+      await clearSessionCookie();
+    }
+
     return successResponse();
   });
 }

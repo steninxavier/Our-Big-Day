@@ -147,6 +147,7 @@
 .navigation .navCta:hover,
 .navigation .navCta:focus-visible {
   background: #243657;
+  color: #fff;
   transform: translateY(-1px);
 }
 

@@ -4,7 +4,9 @@ export type ErrorCode =
   | "FORBIDDEN"
   | "NOT_FOUND"
   | "CONFLICT"
+  | "ALREADY_HAS_WEDDING"
   | "RATE_LIMITED"
+  | "SERVICE_UNAVAILABLE"
   | "CONFIGURATION_ERROR"
   | "INTERNAL_ERROR";
 

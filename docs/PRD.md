@@ -412,7 +412,7 @@ Optional:
 
 Example:
 
-**John ❤️ Liya**
+**Liya ❤️ John**
 
 14 February 2027  
 Dehradun, Uttarakhand
@@ -671,7 +671,7 @@ The invitation experience should display:
 
 Example:
 
-**John & Liya**
+**Liya & John**
 
 would love for you to celebrate their wedding with them.
 
@@ -914,7 +914,7 @@ Each wedding should have a hosted wedding website.
 
 Example:
 
-`makemymarriage.com/w/john-liya`
+`makemymarriage.com/w/liya-john`
 
 The wedding website is different from the private guest invitation.
 
@@ -1047,7 +1047,7 @@ Example printed message:
 
 **Share the Memories 📸**
 
-Scan to upload and view photos from John & Liya's wedding.
+Scan to upload and view photos from Liya & John's wedding.
 
 Wedding Members should be able to:
 
@@ -1213,7 +1213,7 @@ Exact database modelling will be decided during database design.
 
 ---
 
-# 12. Important UX Liyaples
+# 12. Important UX Principles
 
 ## 12.1 Wedding First
 
@@ -1541,7 +1541,7 @@ Our Big Day V1 is considered functionally complete when:
 
 ---
 
-# 19. Product Liyaple
+# 19. Product Principle
 
 Whenever deciding whether something belongs in V1, use this question:
 

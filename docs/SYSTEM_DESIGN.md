@@ -29,7 +29,7 @@ The purpose of this document is to establish:
 - Deployment topology
 - Security considerations
 - Scaling strategy
-- Reliability and failure-handling liyaples
+- Reliability and failure-handling principles
 
 This document intentionally remains at the **system-design level**.
 
@@ -71,7 +71,7 @@ without requiring major architectural changes.
 
 ---
 
-# 3. Architecture Liyaples
+# 3. Architecture Principles
 
 ## 3.1 Start as a Modular Monolith
 
@@ -315,7 +315,7 @@ Includes:
 Example:
 
 ```text
-/w/john-liya-14022027
+/w/liya-john-14022027
 ```
 
 Does not require authentication.
@@ -897,7 +897,7 @@ Each Wedding has a public website.
 Example:
 
 ```text
-/w/john-liya-14022027
+/w/liya-john-14022027
 ```
 
 The page resolves the slug to a Wedding.
@@ -924,7 +924,7 @@ brideName-groomName-weddingDate
 Example:
 
 ```text
-john-liya-14022027
+liya-john-14022027
 ```
 
 Slug generation should:
@@ -938,9 +938,9 @@ Slug generation should:
 Example collision:
 
 ```text
-john-liya-14022027
+liya-john-14022027
 
-john-liya-14022027-2
+liya-john-14022027-2
 ```
 
 The slug should remain stable after creation.

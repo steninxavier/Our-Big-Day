@@ -2,6 +2,16 @@ import { z } from "zod";
 
 const dateOnly = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD.");
 
+const validDateOnly = dateOnly.refine(
+  (value) => {
+    const [year, month, day] = value.split("-").map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+  },
+  "Use a valid calendar date.",
+);
+
 const timeZone = z.string().refine(
   (value) => {
     try {
@@ -16,7 +26,7 @@ const timeZone = z.string().refine(
 
 const locationSchema = z.object({
   formattedAddress: z.string().trim().max(500).optional(),
-  city: z.string().trim().max(120).optional(),
+  city: z.string().trim().min(1).max(120),
   state: z.string().trim().max(120).optional(),
   country: z.string().trim().max(120).optional(),
   latitude: z.number().min(-90).max(90).optional(),
@@ -29,9 +39,9 @@ export const createWeddingSchema = z.object({
   groomName: z.string().trim().min(1).max(120),
   title: z.string().trim().min(1).max(180).optional(),
   description: z.string().trim().max(2_000).optional(),
-  weddingDate: dateOnly,
+  weddingDate: validDateOnly,
   timeZone,
-  location: locationSchema.optional(),
+  location: locationSchema,
 });
 
 export type CreateWeddingInput = z.output<typeof createWeddingSchema>;

@@ -1,7 +1,18 @@
 import { z } from "zod";
 
 const emailSchema = z.string().trim().toLowerCase().email().max(254);
-const passwordSchema = z.string().min(8).max(128);
+export const MAX_PASSWORD_BYTES = 72;
+
+const bcryptSafePasswordSchema = z
+  .string()
+  .max(MAX_PASSWORD_BYTES, `Use ${MAX_PASSWORD_BYTES} characters or fewer.`)
+  .refine(
+    (value) => new TextEncoder().encode(value).byteLength <= MAX_PASSWORD_BYTES,
+    `Use ${MAX_PASSWORD_BYTES} UTF-8 bytes or fewer.`,
+  );
+
+const passwordSchema = bcryptSafePasswordSchema.min(8, "Use at least 8 characters.");
+const loginPasswordSchema = bcryptSafePasswordSchema.min(1, "Enter your password.");
 
 export const signUpSchema = z.object({
   name: z.string().trim().min(1).max(120),
@@ -11,7 +22,7 @@ export const signUpSchema = z.object({
 
 export const loginSchema = z.object({
   email: emailSchema,
-  password: z.string().min(1).max(128),
+  password: loginPasswordSchema,
 });
 
 export const forgotPasswordSchema = z.object({
