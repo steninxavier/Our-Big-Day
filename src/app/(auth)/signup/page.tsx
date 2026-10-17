@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getOptionalCurrentUser } from "@/server/auth/current-user";
+import { invitationReturnPath } from "@/shared/auth/invitation-return";
 
 import SignupForm from "./signup-form";
 import styles from "../login/login.module.css";
@@ -35,9 +36,10 @@ function ArrowIcon() {
   );
 }
 
-export default async function SignupPage() {
+export default async function SignupPage({ searchParams }: { searchParams?: Promise<{ next?: string | string[] }> } = {}) {
+  const next = invitationReturnPath((await searchParams)?.next);
   if (await getOptionalCurrentUser()) {
-    redirect("/dashboard");
+    redirect(next ?? "/dashboard");
   }
 
   return (
@@ -92,13 +94,13 @@ export default async function SignupPage() {
           <div className={styles.intro}>
             <p className={styles.eyebrow}>Your wedding begins here</p>
             <h1 id="sign-up-title">Create your space.</h1>
-            <p>Set up your account now. We&apos;ll guide you through creating your first wedding next.</p>
+            <p>{next ? "Create an account using the email address that received your invitation." : "Set up your account now. We'll guide you through creating your first wedding next."}</p>
           </div>
 
-          <SignupForm />
+          <SignupForm next={next} />
 
           <p className={styles.newAccount}>
-            Already have an account? <Link href="/login">Sign in <ArrowIcon /></Link>
+            Already have an account? <Link href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}>Sign in <ArrowIcon /></Link>
           </p>
         </section>
       </div>

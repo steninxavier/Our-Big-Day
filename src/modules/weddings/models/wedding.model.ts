@@ -33,6 +33,7 @@ export type Wedding = {
     isEnabled: boolean;
   };
   createdByUserId: Types.ObjectId;
+  membershipRevision?: number;
   deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -81,6 +82,7 @@ const weddingSchema = new Schema<Wedding>(
       isEnabled: { type: Boolean, required: true, default: false },
     },
     createdByUserId: { type: Schema.Types.ObjectId, required: true, ref: "User" },
+    membershipRevision: { type: Number, default: 0 },
     deletedAt: { type: Date, index: true },
   },
   { collection: "weddings", timestamps: true },

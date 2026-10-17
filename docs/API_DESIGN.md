@@ -951,6 +951,8 @@ REVOKED
 
 rather than necessarily deleting it.
 
+Implemented behavior: authenticated Admins can revoke a PENDING invitation in their own wedding. Missing, already used, revoked, or cross-wedding invitations return `NOT_FOUND`. The update and authorization are transactional; an acceptance racing with revocation cannot also commit against the same pending invitation. Responses do not disclose the token.
+
 ---
 
 # 25. Get Public Member Invitation
@@ -1068,6 +1070,8 @@ FORBIDDEN
 Successful removal immediately invalidates Wedding access for that User.
 
 Existing auth session itself may remain valid, but `/api/auth/me` will then show no Wedding membership.
+
+Implemented behavior: the Admin may remove their own membership only if another Admin remains. A transaction writes the wedding membership revision before counting Admins and removing the wedding-scoped target. All future operations that remove or demote Admins must use the same revision lock. Malformed IDs produce a validation error; absent and cross-wedding memberships return `NOT_FOUND`.
 
 ---
 
@@ -3799,3 +3803,6 @@ settings and QR remain deferred.
 - Private metadata and URL responses use Cache-Control: no-store. Provider
   failures are mapped to a generic storage-unavailable error without logging
   keys, credentials, signed URLs or raw provider responses.
+# Role policy amendment (2026-10-17)
+
+The member-invitation `role` accepts `ADMIN`, `MANAGER`, or `EVENT_COORDINATOR`; only an Admin may invite. A coordinator cannot list members or pending invitations. The existing API has no event-assignment, event, or task operations: future operations must enforce the PRD's assigned-event-only policy server-side, including on every list and direct-resource request. This amendment supersedes earlier two-role permission descriptions.

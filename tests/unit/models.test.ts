@@ -36,7 +36,7 @@ describe("Mongoose model definitions", () => {
     expect(first.PasswordResetTokenModel.collection.name).toBe("password_reset_tokens");
     expect(first.PasswordResetTokenModel.schema.path("usedAt")).toBeDefined();
 
-    expect(first.WeddingMembershipModel.schema.path("role").options.enum).toEqual(["ADMIN", "MANAGER"]);
+    expect(first.WeddingMembershipModel.schema.path("role").options.enum).toEqual(["ADMIN", "MANAGER", "EVENT_COORDINATOR"]);
     expect(first.WeddingMembershipModel.schema.indexes()).toEqual(expect.arrayContaining([
       [{ weddingId: 1, userId: 1 }, { unique: true }],
       [{ weddingId: 1, role: 1 }, {}],

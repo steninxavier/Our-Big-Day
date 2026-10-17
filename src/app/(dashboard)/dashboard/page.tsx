@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { getOptionalCurrentUser } from "@/server/auth/current-user";
 
-import LogoutButton from "./logout-button";
+import DashboardHeader from "./dashboard-header";
 
 export const metadata = { title: "Dashboard" };
 
@@ -21,6 +21,8 @@ export default async function DashboardPage() {
   const weddingName = `${currentUser.wedding.brideName} & ${currentUser.wedding.groomName}`;
 
   return (
+    <>
+    <DashboardHeader active="dashboard" showMembers={currentUser.membership?.role === "ADMIN" || currentUser.membership?.role === "MANAGER"} />
     <main className="mx-auto max-w-6xl px-6 py-12">
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div>
@@ -28,11 +30,11 @@ export default async function DashboardPage() {
           <h1 className="mt-3 text-4xl font-semibold">Welcome, {firstName}.</h1>
           <p className="mt-2 text-sm font-medium text-[#75655b]">{weddingName} · {currentUser.wedding.weddingDate}</p>
         </div>
-        <LogoutButton />
       </div>
       <p className="mt-4 max-w-2xl text-[#75655b]">
-        Dashboard aggregation, membership protection, and each planning module are represented in the server scaffold.
+        {currentUser.membership?.role === "EVENT_COORDINATOR" ? "Your assigned events will appear here when event management is available. You do not have access to other wedding planning information." : "Dashboard aggregation, membership protection, and each planning module are represented in the server scaffold."}
       </p>
     </main>
+    </>
   );
 }

@@ -1,0 +1,56 @@
+.button {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #17233a;
+  border-radius: 999px;
+  padding: 0 22px;
+  background: #17233a;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, transform 160ms ease, opacity 160ms ease;
+}
+
+.button:hover:not(:disabled),
+.button:focus-visible:not(:disabled) {
+  background: #2b3c60;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.button:focus-visible {
+  outline: 3px solid rgba(181, 138, 66, 0.5);
+  outline-offset: 3px;
+}
+
+.button:disabled {
+  cursor: wait;
+  opacity: 0.74;
+}
+
+.button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.headerButton {
+  min-height: 40px;
+  padding: 0 18px;
+}
+
+@media (pointer: coarse) {
+  .headerButton {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+}

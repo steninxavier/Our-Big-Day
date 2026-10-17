@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getOptionalCurrentUser } from "@/server/auth/current-user";
+import { invitationReturnPath } from "@/shared/auth/invitation-return";
 
 import LoginForm from "./login-form";
 import styles from "./login.module.css";
@@ -35,9 +36,10 @@ function ArrowIcon() {
   );
 }
 
-export default async function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams?: Promise<{ next?: string | string[] }> } = {}) {
+  const next = invitationReturnPath((await searchParams)?.next);
   if (await getOptionalCurrentUser()) {
-    redirect("/dashboard");
+    redirect(next ?? "/dashboard");
   }
 
   return (
@@ -95,10 +97,10 @@ export default async function LoginPage() {
             <p>Sign in to continue planning your day, together.</p>
           </div>
 
-          <LoginForm />
+          <LoginForm next={next} />
 
           <p className={styles.newAccount}>
-            New to Our Big Day? <Link href="/signup">Create your wedding space <ArrowIcon /></Link>
+            New to Our Big Day? <Link href={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"}>Create your wedding space <ArrowIcon /></Link>
           </p>
         </section>
       </div>

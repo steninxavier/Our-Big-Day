@@ -2685,3 +2685,6 @@ Verification: `npm test` uses mocked persistence/storage and component tests.
 `RUN_R2_SMOKE=1 npm test -- src/server/storage/r2.integration.test.ts` explicitly
 loads `.env.local`, refuses any bucket other than make-my-marriage-dev, and
 uploads/reads/deletes only a unique test-fixtures prefix. It never uses MongoDB.
+# Role policy amendment (2026-10-17)
+
+The PRD's role amendment supersedes earlier two-role statements. Event Coordinators have no wedding-wide planning access and may access only explicitly assigned events and their tasks. Future event and task operations must resolve membership and wedding on the server, verify the event assignment for that membership, and deny access by default. Assignment management and event/task services are not yet implemented. Admins alone manage members; Managers retain wedding-wide planning access without member administration.

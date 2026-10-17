@@ -868,6 +868,8 @@ Application logic must enforce:
 - User cannot join two weddings
 - Removed member immediately loses wedding access
 
+Member removal serializes through a transactional increment of `Wedding.membershipRevision` before counting Admins and deleting a membership; absent fields in existing weddings are initialized by `$inc`. Future Admin demotion or removal paths must use the same write lock. Invitation revocation updates the PENDING invitation inside the same kind of admin-authorized transaction; acceptance updates that same invitation transactionally.
+
 ---
 
 # 28. Wedding Member Invitations
@@ -3234,3 +3236,6 @@ READY record. Staging cleanup after successful confirmation is best effort.
 Abandoned/replayed staging objects and ambiguous-write/cleanup-failure orphans
 require a future reconciliation process; do not add a TTL that drops the only
 metadata reference before object cleanup. No automated orphan cleanup is claimed.
+# Role policy amendment (2026-10-17)
+
+Wedding membership and member invitation roles may be `ADMIN`, `MANAGER`, or `EVENT_COORDINATOR`. Existing roles require no migration. Event assignment persistence is not yet implemented: its future schema must reference the coordinator's membership and event in the same server-derived wedding, and queries must deny unassigned coordinators. This amendment supersedes earlier two-role enum descriptions.

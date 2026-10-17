@@ -77,7 +77,7 @@ function EyeIcon({ visible }: { visible: boolean }) {
   );
 }
 
-export default function SignupForm() {
+export default function SignupForm({ next }: { next?: string } = {}) {
   const router = useRouter();
   const [values, setValues] = useState<Record<FieldName, string>>({
     name: "",
@@ -143,7 +143,7 @@ export default function SignupForm() {
         return;
       }
 
-      router.replace(payload.data?.hasWedding ? "/dashboard" : "/onboarding");
+      router.replace(next ?? (payload.data?.hasWedding ? "/dashboard" : "/onboarding"));
       router.refresh();
     } catch {
       setFormError("We could not reach your wedding space. Check your connection and try again.");

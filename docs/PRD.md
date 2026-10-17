@@ -1554,3 +1554,6 @@ If it introduces significant complexity without meaningfully improving the core 
 The objective of V1 is not to build every possible wedding-related feature.
 
 The objective is to build a cohesive product that a real Indian family could genuinely use for their wedding.
+# Role policy amendment (2026-10-17)
+
+This amendment supersedes earlier Admin/Manager-only descriptions. Wedding Admins can invite Admins, Managers, and Event Coordinators. Admins manage members; Managers have wedding-wide planning access but cannot administer members. Event Coordinators may access only events explicitly assigned to their own wedding membership and tasks belonging to those events. They do not have wedding-wide planning, member-directory, guest, or financial access. An unassigned coordinator has no event access. Server-side authorization is required on every data operation. Events, tasks, and event assignments are not yet implemented.
