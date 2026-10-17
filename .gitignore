@@ -12,6 +12,7 @@
 # generated files
 *.tsbuildinfo
 next-env.d.ts
+coverage/
 
 # operating system / editor files
 .DS_Store

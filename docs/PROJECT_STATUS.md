@@ -1,11 +1,11 @@
 # Our Big Day — Project Status
 
-> Last updated: 2026-10-14
+> Last updated: 2026-10-17
 > Purpose: an honest implementation snapshot. This document distinguishes working code from planned product scope and should be updated after each material milestone.
 
 ## Current phase
 
-The project is in **foundation, Couple authentication, and first-wedding onboarding** work. The marketing homepage, Couple sign-in and sign-up interfaces, session routing, and first-wedding onboarding are implemented. The database-backed onboarding transaction still needs a successful live Atlas verification.
+The project is in **foundation, Couple authentication, and first-wedding onboarding** work. The marketing homepage, Couple sign-in and sign-up interfaces, session routing, and first-wedding onboarding are implemented. The database-backed onboarding transaction and session lifecycle have now passed a controlled live Atlas verification.
 
 ## Source of truth
 
@@ -32,6 +32,7 @@ When implementation and these documents disagree, pause and resolve the differen
 - Shared visual system: coconut ivory, midnight indigo, restrained kasavu gold, Playfair Display, and Plus Jakarta Sans.
 - Professional OB monogram and matching SVG favicon.
 - The homepage header “Start planning” CTA retains white text on hover and keyboard focus.
+- The homepage header checks the server-side session: signed-in Couples with a Wedding see “Go to wedding”; those without one see “Complete wedding setup”. Signed-out visitors retain the sign-in and sign-up links. If session lookup is temporarily unavailable, the header offers a neutral “Your account” link.
 - Homepage source was committed and pushed as `7a5e8df` (`feat: implement wedding planning homepage`).
 
 ### Authentication API foundation
@@ -44,6 +45,7 @@ When implementation and these documents disagree, pause and resolve the differen
 
 ### First-wedding onboarding
 
+- The desktop and mobile Create Wedding Space references in the private Stitch project have been translated into the onboarding presentation while preserving the working form contract and accessibility behavior.
 - Protected `/onboarding` page for authenticated Couples who do not yet have a Wedding membership.
 - Required, accessible onboarding fields follow the PRD: bride name, groom name, wedding date, location/city, and an explicit wedding time zone. Wedding title and description are optional.
 - `POST /api/wedding` parses the request with Zod, derives the current user from the server-side session, and never accepts a client-provided `weddingId`.
@@ -70,21 +72,27 @@ The following checks have passed against the current local implementation:
 
 | Check | Result | Notes |
 | --- | --- | --- |
-| `npm run typecheck` | Pass | TypeScript has no reported errors. |
-| `npm run lint` | Pass | ESLint has no reported errors. |
-| `npm run build` | Pass | Production build passed when run with the Windows permission Next.js requires to spawn its verification subprocess. `/login`, `/signup`, `/onboarding`, and `/dashboard` are dynamically rendered because they check the session cookie. |
+| `npm run typecheck` | Pass | TypeScript has no reported errors across application and test sources. |
+| `npm run lint` | Pass | Full-workspace ESLint completed with no errors or warnings. |
+| `npm run build` | Pass | Production build passed on 2026-10-17. The homepage, `/login`, `/signup`, `/onboarding`, and `/dashboard` are dynamically rendered because they check the session cookie. |
+| `npm test -- --maxWorkers=1` | Pass | On 2026-10-17, 61 tests passed in 11 suites, including mocked session cases for the homepage header. A prior parallel run encountered worker-start timeouts. |
+| `npm test` and `npm run test:coverage` (2026-10-15) | Pass | At that time, Vitest ran 57 tests in 11 suites, with 100% coverage across 35 application files. This historical measurement predates the homepage header change. The suite uses mocked persistence; it does not replace live Atlas transaction verification. |
 | Homepage and public routes | Pass | `/`, `/login`, `/signup`, `/api/health`, and `/icon.svg` returned successful local responses. |
 | Homepage header CTA hover/focus state | Pass | The header “Start planning” CTA keeps white text while its indigo background changes on hover or keyboard focus. |
+| Signed-out homepage header | Pass | Browser inspection on 2026-10-17 showed the sign-in and start-planning links. The updated signed-in header has not yet been manually verified with a live account. |
 | Invalid login payload | Pass | The API rejects malformed credentials with `400`. |
 | Sign-in validation UI | Pass | Empty and malformed-email submissions show inline errors in the browser. |
 | Sign-up validation UI | Pass | Empty submission and mismatched passwords show inline errors in the browser. |
-| Sign-up, sign-in, logout, and route protection | Pass | Previously verified in a controlled QA run: a temporary Couple signed up, reached `/dashboard`, was redirected away from `/login` and `/signup`, signed out, was denied dashboard access, signed in again, and signed out again. The QA user and associated sessions were deleted afterwards. This does not verify the current first-wedding transaction, which is blocked by Atlas connectivity. |
+| Live sign-up, onboarding, sign-in, logout, and route protection | Pass | Controlled Atlas QA on 2026-10-15 created a disposable Couple, confirmed the HTTP-only session and pre-wedding state, created exactly one Wedding plus its `ADMIN` membership, rejected a second Wedding with `409 ALREADY_HAS_WEDDING`, verified dashboard/onboarding guards, logged out, signed in again with `hasWedding: true`, then logged out. The exact temporary user, membership, Wedding, and sessions were deleted and verified absent. |
 | Stale/missing-session logout | Pass | A missing session returns `401` and clears the cookie; a stale token succeeds idempotently and also clears the cookie. |
 | Onboarding access guards | Pass | An unauthenticated `/onboarding` request redirects to `/login`, and an unauthenticated `POST /api/wedding` returns `401`. |
 | Onboarding typecheck, lint, and production build | Pass | The new `/onboarding` page and `/api/wedding` route compile successfully. |
-| Atlas failure handling and retry recovery | Pass | A read-only valid-but-nonexistent login probe returned generic `503 SERVICE_UNAVAILABLE` after the 10-second Atlas selection timeout. A second probe made a fresh 10-second connection attempt, proving a failed connection is not retained in cache. Atlas itself remains unreachable from this network. |
+| Stitch Create Wedding Space presentation | Pass | The private Stitch desktop/mobile composition has been applied to the protected onboarding UI. It retains the existing field validation, error focus behavior, API payload, and server-side route guards. |
+| Current onboarding route smoke check | Pass | While the local dev server was running on 2026-10-15, an unauthenticated `GET /onboarding` returned `307` to `/login`; `GET /api/health` returned `200`. |
+| Current unauthenticated-session smoke check | Pass | `GET /api/auth/me` without a session returned the expected `401 UNAUTHENTICATED`. |
+| Atlas availability and retry recovery | Pass | Earlier unavailable-Atlas probes returned generic `503 SERVICE_UNAVAILABLE` after the 10-second selection timeout, and a second probe made a fresh connection attempt. On 2026-10-15, a valid nonexistent-login probe returned `401`, proving Atlas was reachable from this network before the live controlled QA run. |
 
-`npm test` currently exits successfully but runs **zero tests**. It is not evidence of functional coverage.
+Manual browser inspection confirms the homepage and sign-in page render their headings, navigation, labels, visible controls, and public content. The browser connector did not permit form-click commands against the local dev tab, so browser form interaction is evidenced by the automated client-component suite rather than treated as a manual pass.
 
 ## Known limits and work not yet implemented
 
@@ -92,8 +100,8 @@ The following checks have passed against the current local implementation:
 
 - Local development now targets the `our_big_day_clients` database. Existing records in the previous default `test` database are not copied automatically; keep them there unless a deliberate migration is requested.
 - The successful end-to-end QA check requires a working `.env.local` `MONGODB_URI`. If Atlas networking changes, re-run the controlled test before relying on the flow.
-- **Live onboarding transaction verification is pending:** on 2026-10-14, the controlled QA flow stopped when MongoDB Atlas could not connect from this computer. No successful sign-up or Wedding transaction was observed, and the cleanup connection could not be verified until Atlas access is restored. Re-run the controlled QA flow after confirming Atlas Network Access and local network availability.
-- Atlas failures now return a generic `503 SERVICE_UNAVAILABLE` response after a 10-second selection timeout. A failed connection is no longer cached, so the running application retries normally once Atlas network access is restored; the actual Atlas allowlist still needs updating before live QA can succeed.
+- **Live onboarding transaction verification passed:** on 2026-10-15, the controlled QA flow successfully created a disposable user, server-side session, Wedding, and initial `ADMIN` membership through Atlas. It also verified the one-Wedding rule, protected-page redirects, logout, and repeat login. Exact cleanup removed the temporary user, membership, Wedding, and sessions, with zero matching records remaining.
+- Atlas failures return a generic `503 SERVICE_UNAVAILABLE` response after a 10-second selection timeout. A failed connection is not cached, so the running application retries normally after Atlas network recovery. Atlas was reachable from this computer during the 2026-10-15 QA run; re-run the controlled test after a network or Network Access change.
 - TOTP MFA, recovery codes, password reset UI, and email verification flows are not implemented.
 - The dashboard now displays the current Couple's wedding identity, but its planning summaries remain placeholders until events, tasks, guests, expenses, and vendors are implemented.
 
@@ -104,7 +112,7 @@ The following checks have passed against the current local implementation:
 
 ### Production readiness
 
-- Add real automated unit, integration, authorization, and end-to-end tests.
+- Re-run controlled live sign-up, sign-in, wedding creation, and cleanup verification after an Atlas network/configuration change and before release. The live run verifies HTTP cookie behavior and database transactions; it does not replace a future interactive-browser release check.
 - Add authentication rate limiting and Origin/Host checks.
 - Use a dummy hash for unknown-user login attempts to reduce timing differences.
 - Resolve the documented raw-versus-hashed gallery-token rule before implementing gallery access.
@@ -113,7 +121,7 @@ The following checks have passed against the current local implementation:
 
 ## Immediate next milestone
 
-After live Atlas verification succeeds, build **Wedding Member invitations** for the initial ADMIN:
+Build **Wedding Member invitations** for the initial ADMIN:
 
 1. Let the ADMIN invite a partner or family member by email with a scoped `MANAGER` role.
 2. Store a hashed, expiring invitation token and send it through the planned email boundary.

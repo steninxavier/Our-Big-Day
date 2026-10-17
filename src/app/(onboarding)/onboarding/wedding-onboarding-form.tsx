@@ -24,6 +24,16 @@ const initialValues: Record<FieldName, string> = {
   timeZone: "Asia/Kolkata",
 };
 
+const fieldOrder: FieldName[] = [
+  "brideName",
+  "groomName",
+  "weddingDate",
+  "city",
+  "timeZone",
+  "title",
+  "description",
+];
+
 function isValidDate(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
 
@@ -72,7 +82,11 @@ function hasErrors(errors: FieldErrors) {
 }
 
 function FieldError({ id, message }: { id: string; message?: string }) {
-  return message ? <p className={styles.fieldError} id={id}>{message}</p> : null;
+  return message ? (
+    <p className={styles.fieldError} id={id} aria-live="polite">
+      {message}
+    </p>
+  ) : null;
 }
 
 export default function WeddingOnboardingForm() {
@@ -117,7 +131,15 @@ export default function WeddingOnboardingForm() {
     setErrors(nextErrors);
     setFormError("");
 
-    if (hasErrors(nextErrors)) return;
+    if (hasErrors(nextErrors)) {
+      setFormError("Please correct the highlighted fields and try again.");
+
+      // `hasErrors(nextErrors)` guarantees that one of the ordered fields is invalid.
+      const firstInvalidField = fieldOrder.find((name) => Boolean(nextErrors[name]))!;
+      window.requestAnimationFrame(() => document.getElementById(firstInvalidField)?.focus());
+
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -159,15 +181,25 @@ export default function WeddingOnboardingForm() {
 
   return (
     <form className={styles.form} noValidate onSubmit={submit} aria-busy={isSubmitting}>
-      {formError ? <p className={styles.formError} role="alert">{formError}</p> : null}
+      {formError ? (
+        <div className={styles.formError} role="alert">
+          <svg className={styles.formErrorIcon} aria-hidden="true" viewBox="0 0 20 20">
+            <path d="M10 6.3v4.5M10 14.2v.1M8.16 2.9 1.93 14.05A2.1 2.1 0 0 0 3.77 17h12.46a2.1 2.1 0 0 0 1.84-2.95L11.84 2.9a2.1 2.1 0 0 0-3.68 0Z" />
+          </svg>
+          <p>{formError}</p>
+        </div>
+      ) : null}
 
       <div className={styles.fieldGrid}>
         <div className={styles.fieldGroup}>
-          <label htmlFor="brideName">Bride’s name</label>
+          <label htmlFor="brideName">
+            <span>Bride’s name</span>
+            <em>Required</em>
+          </label>
           <input
             aria-describedby={errors.brideName && touched.brideName ? "brideName-error" : undefined}
             aria-invalid={Boolean(errors.brideName && touched.brideName)}
-            autoComplete="name"
+            autoComplete="given-name"
             id="brideName"
             maxLength={120}
             name="brideName"
@@ -182,11 +214,14 @@ export default function WeddingOnboardingForm() {
         </div>
 
         <div className={styles.fieldGroup}>
-          <label htmlFor="groomName">Groom’s name</label>
+          <label htmlFor="groomName">
+            <span>Groom’s name</span>
+            <em>Required</em>
+          </label>
           <input
             aria-describedby={errors.groomName && touched.groomName ? "groomName-error" : undefined}
             aria-invalid={Boolean(errors.groomName && touched.groomName)}
-            autoComplete="name"
+            autoComplete="given-name"
             id="groomName"
             maxLength={120}
             name="groomName"
@@ -203,7 +238,10 @@ export default function WeddingOnboardingForm() {
 
       <div className={styles.fieldGrid}>
         <div className={styles.fieldGroup}>
-          <label htmlFor="weddingDate">Wedding date</label>
+          <label htmlFor="weddingDate">
+            <span>Wedding date</span>
+            <em>Required</em>
+          </label>
           <input
             aria-describedby={errors.weddingDate && touched.weddingDate ? "weddingDate-error" : undefined}
             aria-invalid={Boolean(errors.weddingDate && touched.weddingDate)}
@@ -219,7 +257,10 @@ export default function WeddingOnboardingForm() {
         </div>
 
         <div className={styles.fieldGroup}>
-          <label htmlFor="city">City or wedding location</label>
+          <label htmlFor="city">
+            <span>City or wedding location</span>
+            <em>Required</em>
+          </label>
           <input
             aria-describedby={errors.city && touched.city ? "city-error" : undefined}
             aria-invalid={Boolean(errors.city && touched.city)}
@@ -240,7 +281,10 @@ export default function WeddingOnboardingForm() {
 
       <div className={styles.fieldGrid}>
         <div className={styles.fieldGroup}>
-          <label htmlFor="timeZone">Wedding time zone</label>
+          <label htmlFor="timeZone">
+            <span>Wedding time zone</span>
+            <em>Required</em>
+          </label>
           <select
             aria-describedby={errors.timeZone && touched.timeZone ? "timeZone-error" : undefined}
             aria-invalid={Boolean(errors.timeZone && touched.timeZone)}
@@ -263,7 +307,10 @@ export default function WeddingOnboardingForm() {
         </div>
 
         <div className={styles.fieldGroup}>
-          <label htmlFor="title">Wedding title <span>Optional</span></label>
+          <label htmlFor="title">
+            <span>Wedding title</span>
+            <em>Optional</em>
+          </label>
           <input
             aria-describedby={errors.title && touched.title ? "title-error" : undefined}
             aria-invalid={Boolean(errors.title && touched.title)}
@@ -281,7 +328,10 @@ export default function WeddingOnboardingForm() {
       </div>
 
       <div className={styles.fieldGroup}>
-        <label htmlFor="description">A note about your celebration <span>Optional</span></label>
+        <label htmlFor="description">
+          <span>A note about your celebration</span>
+          <em>Optional</em>
+        </label>
         <textarea
           aria-describedby={errors.description && touched.description ? "description-error" : "description-hint"}
           aria-invalid={Boolean(errors.description && touched.description)}
@@ -294,16 +344,25 @@ export default function WeddingOnboardingForm() {
           rows={3}
           value={values.description}
         />
-        <p className={styles.fieldHint} id="description-hint">You can add a cover image later, once private wedding photo storage is available.</p>
+        <p className={styles.deferredNote} id="description-hint">
+          <svg className={styles.deferredIcon} aria-hidden="true" viewBox="0 0 20 20">
+            <path d="M10 3.2a6.8 6.8 0 1 0 6.8 6.8M10 6.4v4.1l2.7 1.6" />
+          </svg>
+          <span>You can add a cover image later, once private wedding photo storage is available.</span>
+        </p>
         <FieldError id="description-error" message={touched.description ? errors.description : undefined} />
       </div>
 
       <button className={styles.submitButton} disabled={isSubmitting} type="submit">
-        {isSubmitting ? "Creating your wedding…" : "Create wedding space"}
+        <span>{isSubmitting ? "Creating your wedding…" : "Create wedding space"}</span>
         <svg aria-hidden="true" viewBox="0 0 16 16">
           <path d="M2.75 8h9.5M8.75 4.5 12.25 8l-3.5 3.5" />
         </svg>
       </button>
+
+      <p className={styles.formPrivacy}>
+        Your details are private and used only to create your wedding space.
+      </p>
     </form>
   );
 }

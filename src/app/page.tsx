@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+
+import { getOptionalCurrentUser } from "@/server/auth/current-user";
+import { AppError } from "@/shared/errors/app-error";
+
 import styles from "./home.module.css";
 
 export const metadata: Metadata = {
@@ -194,7 +198,19 @@ function PlannerPreview() {
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  let currentUser: Awaited<ReturnType<typeof getOptionalCurrentUser>> = null;
+  let accountUnavailable = false;
+
+  try {
+    currentUser = await getOptionalCurrentUser();
+  } catch (error) {
+    if (!(error instanceof AppError) || error.code !== "SERVICE_UNAVAILABLE") {
+      throw error;
+    }
+    accountUnavailable = true;
+  }
+
   return (
     <main className={styles.page}>
       <header className={styles.header}>
@@ -202,11 +218,25 @@ export default function HomePage() {
           <BrandLogo />
         </Link>
         <nav className={styles.navigation} aria-label="Primary navigation">
-          <Link href="/login">Sign in</Link>
-          <Link className={styles.navCta} href="/signup">
-            Start planning
-            <ArrowIcon />
-          </Link>
+          {currentUser ? (
+            <Link className={styles.navCta} href={currentUser.wedding ? "/dashboard" : "/onboarding"}>
+              {currentUser.wedding ? "Go to wedding" : "Complete wedding setup"}
+              <ArrowIcon />
+            </Link>
+          ) : accountUnavailable ? (
+            <Link className={styles.navCta} href="/dashboard">
+              Your account
+              <ArrowIcon />
+            </Link>
+          ) : (
+            <>
+              <Link href="/login">Sign in</Link>
+              <Link className={styles.navCta} href="/signup">
+                Start planning
+                <ArrowIcon />
+              </Link>
+            </>
+          )}
         </nav>
       </header>
 

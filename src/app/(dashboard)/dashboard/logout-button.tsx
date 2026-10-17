@@ -3,7 +3,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function LogoutButton() {
+type LogoutButtonProps = {
+  buttonClassName?: string;
+  containerClassName?: string;
+  errorClassName?: string;
+};
+
+export default function LogoutButton({
+  buttonClassName,
+  containerClassName,
+  errorClassName,
+}: LogoutButtonProps) {
   const router = useRouter();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [error, setError] = useState("");
@@ -32,14 +42,14 @@ export default function LogoutButton() {
   }
 
   return (
-    <div className="flex flex-col items-end gap-2">
+    <div className={containerClassName ?? "flex flex-col items-end gap-2"}>
       {error ? (
-        <p className="text-sm text-[#a44932]" role="alert">
+        <p className={errorClassName ?? "text-sm text-[#a44932]"} role="alert">
           {error}
         </p>
       ) : null}
       <button
-        className="rounded-full border border-[#17233a]/20 px-4 py-2 text-sm font-semibold text-[#17233a] transition hover:border-[#17233a] hover:bg-[#17233a] hover:text-[#f8f4ec] disabled:cursor-not-allowed disabled:opacity-60"
+        className={buttonClassName ?? "rounded-full border border-[#17233a]/20 px-4 py-2 text-sm font-semibold text-[#17233a] transition hover:border-[#17233a] hover:bg-[#17233a] hover:text-[#f8f4ec] disabled:cursor-not-allowed disabled:opacity-60"}
         disabled={isSigningOut}
         onClick={signOut}
         type="button"
