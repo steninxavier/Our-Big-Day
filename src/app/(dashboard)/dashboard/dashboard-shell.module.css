@@ -1,0 +1,33 @@
+.shell { min-height: 100vh; display: flex; background: #f8f4ec; }
+.content { min-width: 0; flex: 1; }
+.sidebar { --ink: #17233a; --serif: var(--font-playfair), Georgia, serif; position: sticky; top: 0; align-self: flex-start; display: flex; flex-direction: column; width: 248px; height: 100vh; flex: 0 0 248px; border-right: 1px solid #e6dec8; background: #fdfbf7; color: #17233a; }
+.brandRow { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 29px 24px 27px; }
+.brandLink { border-radius: 4px; }
+.brandLink:focus-visible, .menuToggle:focus-visible, .navLink:focus-visible, .signOut:focus-visible { outline: 2px solid #b58a42; outline-offset: 3px; }
+.menuToggle { display: none; }
+.menu { display: flex; flex: 1; flex-direction: column; min-height: 0; overflow-y: auto; padding: 14px 14px 20px; }
+.navLabel { padding: 0 12px 13px; color: #988b78; font-size: 10px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+.menu nav { display: grid; gap: 5px; }
+.navLink { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 12px; border: 1px solid transparent; border-radius: 7px; color: #6e6b68; font-size: 13px; font-weight: 600; transition: background .15s, color .15s; }
+.navLink:hover { color: #17233a; background: #f6f1e8; }
+.activeLink { border-color: #e8ddc7; background: #f3ecdf; color: #17233a; }
+.navIcon { display: grid; place-items: center; width: 23px; flex: 0 0 23px; color: #9b773d; font-size: 18px; line-height: 1; }
+.sidebarBottom { margin-top: auto; padding: 22px 12px 0; border-top: 1px solid #ece5d9; }
+.sidebarBottom p { color: #8b8175; font-size: 11px; line-height: 1.6; }
+.signOutContainer { display: flex; flex-direction: column; align-items: stretch; gap: .5rem; margin-top: 14px; }
+.signOut { min-height: 40px; border: 1px solid #dcd2bf; border-radius: 6px; color: #17233a; background: transparent; font-size: 12px; font-weight: 700; cursor: pointer; }
+.signOut:hover { background: #17233a; border-color: #17233a; color: #fff; }
+.signOut:disabled { cursor: wait; opacity: .6; }
+.signOutError { color: #a44932 !important; font-size: 12px !important; }
+@media (max-width: 767px) {
+  .shell { display: block; }
+  .sidebar { position: relative; z-index: 10; width: 100%; height: auto; border-right: 0; border-bottom: 1px solid #e6dec8; }
+  .brandRow { min-height: 72px; padding: 15px 20px; }
+  .menuToggle { display: inline-flex; align-items: center; gap: 7px; min-height: 42px; padding: 0 12px; border: 1px solid #ded5c5; border-radius: 6px; background: #fdfbf7; color: #17233a; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .menuToggle span { font-size: 18px; line-height: 1; }
+  .menu { display: none; padding: 4px 16px 18px; }
+  .menuOpen { display: flex; }
+  .sidebarBottom { margin-top: 16px; padding-top: 14px; }
+  .sidebarBottom p { display: none; }
+  .signOutContainer { margin-top: 0; }
+}

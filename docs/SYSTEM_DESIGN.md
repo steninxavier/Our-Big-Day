@@ -820,16 +820,16 @@ Update RSVP
 
 Guest may return to the same link later and modify their RSVP.
 
-Implemented 2026-09-16: Admin/Manager guest details retrieve the stable sharing URL;
+Implemented in this checkout: Admin/Manager sharing creates or retrieves a stable URL;
 public `/invite/:token` and invitation APIs require no account. Guest invitation
 services own token resolution, minimal public projections, capacity validation,
 repeat-response idempotency, and wedding-scoped summaries. The events repository
 loads only active invited events in that wedding. Atomic guest version/capacity
 checks prevent lost updates across organiser edits and RSVP submissions.
 
-The public page follows the approved Stitch floral hero, overlapping RSVP status
-card, dated itinerary, and formal response form. It retains input on failure and
-refreshes permitted details on focus. Generic unavailable states hide deleted or
+The public page uses the existing ivory, indigo and gold design system, an event
+itinerary and a response form. It retains input on failure and refreshes permitted
+details after a conflict. Generic unavailable states hide deleted or
 invalid links. Application logging excludes token-bearing request paths, and
 no-store/no-referrer/noindex protections apply. RSVP writes reuse the MongoDB
 rate-limit mechanism (300/minute globally; 20 per invitation/15 minutes) with HMAC
@@ -837,8 +837,14 @@ counter keys. Token/owner resolution and capacity validation precede quota use;
 per-invitation admission precedes shared admission, so invalid links and rejected
 per-invitation attempts do not spend shared capacity. Dashboard RSVP groups and
 people attending use saved data.
-Guest email delivery, bulk actions, reminders, deadlines, individual guest rosters,
-dietary preferences, transport, and room allocation are outside this increment.
+Individual email invitations and manual pending-RSVP reminders use the existing
+Resend integration. Admin/Manager authorization, wedding scoping, recipient checks,
+an HTTPS application origin, and a short guest-scoped sending lock apply. Recorded
+times indicate provider acceptance, not delivery. The email address cannot be
+changed and the guest cannot be deleted while a send lock is active. Provider
+and database uncertainty can still require manual reconciliation. Bulk actions,
+scheduled reminders, deadlines, individual guest rosters, dietary preferences,
+transport, and room allocation remain outside this increment.
 
 ---
 

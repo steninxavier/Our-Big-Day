@@ -1227,6 +1227,7 @@ priority
 eventId
 assignedMembershipId
 mine=true
+q
 ```
 
 Example:
@@ -1235,14 +1236,18 @@ Example:
 GET /api/tasks?status=TODO&mine=true&page=1&limit=50
 ```
 
-### Implemented V1 behaviour (2026-09-16)
+### V1 task contract
 
 - Admins and Managers have the same task permissions. Wedding scope comes from
   authenticated membership. Missing or cross-wedding resources return `NOT_FOUND`.
+- Event Coordinators may only list or retrieve tasks linked to their explicitly
+  assigned active events; task creation, edits (including status), and deletion
+  are forbidden. General tasks and tasks for other or archived events are hidden.
 - The list response uses `{ data, pagination: { page, limit, total, totalPages } }`.
   Page defaults to 1 (maximum 100000); limit defaults to 20 (maximum 100).
   Ordering is newest creation first, with ID as a stable tie-breaker.
 - `mine=true` means the caller's current membership ID; `mine=false` disables it.
+  `q` performs a case-insensitive literal search of title and description.
   Filters combine with AND. A conflicting explicit assignee and `mine=true`
   produce no matches. `eventId=none` selects general wedding tasks, and
   `assignedMembershipId=none` selects unassigned tasks.
@@ -1306,7 +1311,8 @@ Example:
 
 ```json
 {
-  "status": "COMPLETED"
+  "status": "COMPLETED",
+  "expectedRevision": 3
 }
 ```
 
@@ -1323,9 +1329,12 @@ completedAt = null
 ```
 
 Metadata edits to an already completed task preserve its completion timestamp.
-The body must contain at least one supported field; wedding ownership and
-`completedAt` cannot be supplied by callers. An atomic version check returns
-`CONFLICT` if another write occurs between the service read and update.
+The body must contain at least one supported field plus `expectedRevision`, the
+non-negative integer revision returned when the editor loaded the task; wedding
+ownership and `completedAt` cannot be supplied by callers. Each successful edit
+increments the revision atomically. A stale revision returns `409 CONFLICT`,
+including when another write occurs between the service read and update. Tasks
+created before revision tracking are treated as revision zero without a migration.
 
 ---
 
@@ -1379,12 +1388,12 @@ Do not introduce Elasticsearch.
 
 ---
 
-### Implemented guest CRUD behaviour (2026-09-16)
+### Guest CRUD behavior in this checkout (2026-10-19)
 
 - Admins and Managers have equal guest-management permissions. Wedding scope
   comes from authenticated membership; missing/cross-wedding resources return
   `NOT_FOUND`. IDs, bodies, and query parameters use strict validation.
-- Lists return `{ data, pagination: { page, limit, total, totalPages } }`.
+- Lists return `{ data, pagination: { page, limit, total, totalPages }, summary }`.
   Page defaults to 1 (maximum 100000), limit to 20 (maximum 100). Order by name,
   then ID for stable pagination. Search is a literal, case-insensitive match on
   name/email/phone, up to 120 characters; regex metacharacters are escaped.
@@ -1405,9 +1414,9 @@ Do not introduce Elasticsearch.
 - Guest responses include the public guest fields and `invitedEvents` summaries
   (ID, name, start, archive date). Invitation secrets and normalized-email internals
   are excluded. A new guest has `PENDING` RSVP and null attendance/delivery dates.
-- Updates are partial, reject server-owned RSVP/token/delivery/ownership fields,
-  preserve existing RSVP and stable tokens, and reject capacity below recorded
-  attendance. Version and atomic capacity guards reject concurrent conflicts.
+- Updates are partial and require `expectedRevision`. They reject server-owned
+  RSVP/delivery/ownership fields, preserve existing RSVP, and reject capacity
+  below recorded attendance. Version and atomic capacity guards reject conflicts.
 - Deletion is permanent. Guest EmailJobs do not exist in this increment; their
   cancellation must accompany the later delivery feature, as required below.
 - Dashboard totals count guest records as groups and sum maximum party sizes as
@@ -1531,26 +1540,23 @@ It supersedes the earlier hash-only guest recommendation. Session, password-rese
 and member invitation tokens retain their existing HMAC-SHA-256 hashing rules.
 Gallery tokens follow the separate stable-sharing decision in their own feature.
 
-The initial Guest Management increment creates the secret but exposes no sharing
-endpoint, public invitation page, email delivery, or RSVP submission. Guest CRUD
-never returns the raw token. Later sharing retrieves the existing secret rather
-than rotating it on each request. Deleting its owner invalidates any future link.
-
-As of 2026-09-16, link retrieval, public invitation viewing, RSVP submission, and
-RSVP summaries (§45, §50–52) are implemented. Guest email delivery, bulk actions
-and reminders (§46–49) remain deferred. Copy/open actions do not mark emails sent.
+The current implementation creates a guest token atomically on the first explicit
+sharing request, including for guests created before sharing existed. The token
+remains stable. Public invitation viewing, RSVP, individual email invitations and
+individual manual reminders are implemented; bulk actions remain future work. Revocation/rotation is not yet
+implemented; deleting the guest makes the link unavailable.
 
 ---
 
 # 45. Get Guest Invitation Link
 
-## GET `/api/guests/:guestId/invitation-link`
+## POST `/api/guests/:guestId/invitation-link`
 
 Authentication required. Admin or Manager membership is required; the guest lookup
 uses the membership’s wedding ID. Cross-wedding or missing guests return 404.
-The stable URL uses the configured `NEXT_PUBLIC_APP_URL` origin, never the request
-Host header. Responses are private and not cached. UI supports copy (with a manual
-fallback) and open-in-new-tab; sharing via other apps is manual.
+The stable URL uses the configured `APP_URL` origin, never the request Host header.
+Responses are private and not cached. UI supports copy, manual selection, device
+sharing when available, and a WhatsApp link. `localOnly` flags a localhost address.
 
 ### Response
 
@@ -1577,6 +1583,12 @@ Authentication required.
 
 Guest must have email.
 
+Admin or Manager membership is required; the guest is resolved within the member's
+wedding. The configured APP_URL must be an externally reachable HTTPS origin.
+The action sends immediately; the saved timestamp indicates provider acceptance,
+not confirmed delivery. An uncertain provider or database outcome warns the user
+to check before retrying. A short guest-scoped lock prevents simultaneous sends.
+
 ### Behaviour
 
 ```text
@@ -1592,9 +1604,7 @@ Update invitationSentAt
 ### Response
 
 ```json
-{
-  "success": true
-}
+{ "data": { "acceptedAt": "2026-10-19T12:00:00.000Z" } }
 ```
 
 ---
@@ -1689,7 +1699,9 @@ AND
 rsvpStatus = PENDING
 ```
 
-Send immediately through Resend.
+Admin or Manager membership is required. Send immediately through Resend using
+the same stable private invitation URL. The response contains the provider
+acceptance timestamp in `data.acceptedAt`; it does not confirm delivery.
 
 Update:
 
@@ -1784,7 +1796,7 @@ internal notes
 
 ---
 
-### Implemented public boundary (2026-09-16)
+### Implemented public boundary in this checkout
 
 `/invite/:token` is a standalone page with no login requirement. Both it and this
 API use generic unavailable states for malformed, missing, or deleted invitations;
@@ -1792,11 +1804,10 @@ a deleted wedding also makes the link unavailable. The API returns 404.
 Only the explicit fields above are exposed: no database IDs, contact details,
 internal notes, other guests, members, or unrelated sharing tokens. Events are
 filtered by owner wedding, invitation event IDs, and `archivedAt: null`.
-The approved floral artwork is a local decorative asset; cover uploads are deferred.
 Responses are no-store; public routes have no-referrer and noindex headers/metadata.
 Token-bearing routes are excluded from Next application incoming request logging.
-The UI retains unsaved RSVP choices after retryable failures and refreshes on focus
-or cross-tab signals. No response deadline or invitation expiry is introduced.
+The UI retains unsaved RSVP choices after retryable failures and refreshes details
+after a conflict. No response deadline or invitation expiry is introduced.
 
 ---
 
@@ -1859,7 +1870,7 @@ attendingCount = 0
 
 The same endpoint may be used later to modify RSVP. One response applies to the
 whole guest group. Repeating the current status/count is idempotent. Updates check
-the guest version and current capacity atomically, increment `__v`, and save
+the guest `revision` and current capacity atomically, increment it, and save
 `rsvpUpdatedAt`. A concurrent edit returns 409; reduced capacity returns a friendly
 `PARTY_SIZE_CHANGED` validation error. The UI refreshes the invitation while
 retaining the draft so the guest can review and retry.

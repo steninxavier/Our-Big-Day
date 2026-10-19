@@ -4,10 +4,11 @@ import { redirect } from "next/navigation";
 import brandStyles from "@/app/home.module.css";
 import { listPendingMemberInvitations, listWeddingMembers } from "@/modules/members/member-directory.service";
 import { listEvents, upcomingEventsOnly } from "@/modules/events/event.service";
+import { listGuests } from "@/modules/guests/guest.service";
 import { getOptionalCurrentUser } from "@/server/auth/current-user";
 import { memberRoleLabel } from "@/shared/auth/member-roles";
 
-import DashboardHeader from "./dashboard-header";
+import DashboardShell from "./dashboard-shell";
 import styles from "./dashboard.module.css";
 
 export const metadata = { title: "Dashboard" };
@@ -15,7 +16,7 @@ export const metadata = { title: "Dashboard" };
 const overview = [
   { title: "Upcoming events", icon: "✦", detail: "Ceremonies & celebrations" },
   { title: "Planning tasks", icon: "✓", detail: "Your planning checklist" },
-  { title: "Guests & RSVPs", icon: "◎", detail: "Your guest list & responses" },
+  { title: "Guest parties", icon: "◎", detail: "Your guest list" },
   { title: "Recorded expenses", icon: "₹", detail: "Your wedding finances" },
 ];
 
@@ -32,16 +33,16 @@ export default async function DashboardPage() {
   const firstName = user.name.trim().split(/\s+/)[0] || "there";
   const isAdmin = membership.role === "ADMIN";
   const canViewMembers = isAdmin || membership.role === "MANAGER";
-  const [members, invitations, events] = await Promise.all([
+  const [members, invitations, events, guests] = await Promise.all([
     canViewMembers ? listWeddingMembers(user.id) : Promise.resolve([]),
     isAdmin ? listPendingMemberInvitations(user.id) : Promise.resolve([]),
     listEvents(user.id),
+    canViewMembers ? listGuests(user.id, { page: 1, limit: 1 }) : Promise.resolve(null),
   ]);
   const upcomingEvents = upcomingEventsOnly(events);
 
   return (
-    <>
-      <DashboardHeader active="dashboard" showMembers={canViewMembers} />
+    <DashboardShell active="dashboard" showMembers={canViewMembers}>
       <main className={styles.main}>
         <section className={styles.hero} aria-labelledby="welcome-heading">
           <div>
@@ -61,7 +62,7 @@ export default async function DashboardPage() {
             <section className={styles.overview} aria-label="Wedding overview">
               {overview.map((item) => <article className={styles.statCard} key={item.title}>
                 <div className={styles.statTop}><h2>{item.title}</h2><span className={styles.icon} aria-hidden="true">{item.icon}</span></div>
-                <p className={styles.statValue}>{item.title === "Upcoming events" ? upcomingEvents.length : "Coming soon"}</p><p className={styles.muted}>{item.detail}</p>
+                <p className={styles.statValue}>{item.title === "Upcoming events" ? upcomingEvents.length : item.title === "Planning tasks" ? "Available" : item.title === "Guest parties" ? guests?.summary.total ?? 0 : "Coming soon"}</p><p className={styles.muted}>{item.detail}</p>
               </article>)}
             </section>
             <div className={styles.columns}>
@@ -71,8 +72,8 @@ export default async function DashboardPage() {
                   {upcomingEvents.length ? <ul className={styles.memberList}>{upcomingEvents.slice(0, 3).map((event) => <li key={event.id}><div className={styles.memberName}><strong>{event.name}</strong><span>{new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short", timeZone: wedding.timeZone }).format(new Date(event.startsAt))} ({wedding.timeZone})</span></div></li>)}</ul> : <div className={styles.empty}><span className={styles.emptyIcon} aria-hidden="true">✦</span><div><h3>Your celebrations, all in one place</h3><p>Your upcoming events will appear here.</p></div></div>}
                 </section>
                 <section className={styles.panel} aria-labelledby="tasks-heading">
-                  <div className={styles.panelHeading}><div><h2 id="tasks-heading">Your next tasks</h2><p>Small steps towards a beautiful day.</p></div><span className={styles.badge}>Coming soon</span></div>
-                  <div className={styles.empty}><span className={styles.emptyIcon} aria-hidden="true">✓</span><div><h3>Make room for what matters</h3><p>Task planning is not available yet. Once introduced, your next steps will appear here.</p></div></div>
+                  <div className={styles.panelHeading}><div><h2 id="tasks-heading">Your next tasks</h2><p>Small steps towards a beautiful day.</p></div><Link href="/dashboard/tasks" className={styles.textLink}>View tasks →</Link></div>
+                  <div className={styles.empty}><span className={styles.emptyIcon} aria-hidden="true">✓</span><div><h3>Make room for what matters</h3><p>Organise your preparations on the tasks page.</p></div></div>
                 </section>
               </div>
               <aside className={styles.stack} aria-label="Wedding details">
@@ -82,7 +83,7 @@ export default async function DashboardPage() {
                   <ul className={styles.memberList}>{members.slice(0, 3).map((member) => <li key={member.membershipId}><span className={styles.avatar} aria-hidden="true">{member.user.name.trim().charAt(0).toUpperCase() || "?"}</span><div className={styles.memberName}><strong>{member.user.name}{member.user.id === user.id ? " (You)" : ""}</strong><span>{memberRoleLabel(member.role)}</span></div></li>)}</ul>
                   {members.length === 0 && <p className={styles.muted}>No members to display.</p>}
                 </section>
-                <section className={styles.panel} aria-labelledby="guests-heading"><div className={styles.panelHeading}><div><h2 id="guests-heading">Guest attendance</h2><p>Keep track of who can celebrate with you.</p></div><span className={styles.badge}>Coming soon</span></div><p className={styles.placeholderText}>Guest lists and RSVP tracking are not available yet.</p></section>
+                <section className={styles.panel} aria-labelledby="guests-heading"><div className={styles.panelHeading}><div><h2 id="guests-heading">Guest list</h2><p>Keep your invitations organized.</p></div><Link href="/dashboard/guests" className={styles.textLink}>View guests →</Link></div><p className={styles.placeholderText}>{guests?.summary.total ?? 0} guest parties · {guests?.summary.capacity ?? 0} maximum attendees · {guests?.summary.confirmedAttendees ?? 0} confirmed attendees.</p></section>
                 <section className={styles.panel} aria-labelledby="expenses-heading"><div className={styles.panelHeading}><div><h2 id="expenses-heading">Recorded expenses</h2><p>A clearer view of your wedding finances.</p></div><span className={styles.badge}>Coming soon</span></div><p className={styles.placeholderText}>Expense tracking is not available yet.</p></section>
               </aside>
             </div>
@@ -105,12 +106,12 @@ export default async function DashboardPage() {
             </div>
             <nav className={styles.footerNav} aria-label="Footer navigation">
               <span>YOUR WEDDING SPACE</span>
-              <div><Link href="/dashboard">Dashboard</Link><Link href="/dashboard/events">Wedding events</Link>{canViewMembers && <Link href="/dashboard/members">Wedding members</Link>}</div>
+              <div><Link href="/dashboard">Dashboard</Link><Link href="/dashboard/events">Wedding events</Link><Link href="/dashboard/tasks">Tasks</Link>{canViewMembers && <><Link href="/dashboard/guests">Guests</Link><Link href="/dashboard/members">Wedding members</Link></>}</div>
             </nav>
           </div>
           <div className={styles.footerBottom}><p>Our Big Day <span aria-hidden="true">·</span> Made for celebrating together</p><p>Plan beautifully, together.</p></div>
         </div>
       </footer>
-    </>
+    </DashboardShell>
   );
 }

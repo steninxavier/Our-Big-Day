@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => ({
   listWeddingMembers: vi.fn(),
   listPendingMemberInvitations: vi.fn(),
   listEvents: vi.fn(),
+  listGuests: vi.fn(),
+  getGuestInvitation: vi.fn(),
   getMemberInvitation: vi.fn(),
   redirect: vi.fn(),
   router: { refresh: vi.fn(), replace: vi.fn() },
@@ -19,6 +21,8 @@ vi.mock("@/modules/members/member-directory.service", () => ({
   listPendingMemberInvitations: mocks.listPendingMemberInvitations,
 }));
 vi.mock("@/modules/events/event.service", () => ({ listEvents: mocks.listEvents, upcomingEventsOnly: (events: unknown[]) => events }));
+vi.mock("@/modules/guests/guest.service", () => ({ listGuests: mocks.listGuests }));
+vi.mock("@/modules/guests/invitation.service", () => ({ getInvitation: mocks.getGuestInvitation }));
 vi.mock("@/modules/members/invitation.service", () => ({ getMemberInvitation: mocks.getMemberInvitation }));
 vi.mock("next/navigation", () => ({
   redirect: mocks.redirect,
@@ -60,6 +64,8 @@ describe("application pages", () => {
     mocks.listWeddingMembers.mockReset().mockResolvedValue([]);
     mocks.listPendingMemberInvitations.mockReset().mockResolvedValue([]);
     mocks.listEvents.mockReset().mockResolvedValue([]);
+    mocks.listGuests.mockReset().mockResolvedValue({ summary: { total: 0, capacity: 0 } });
+    mocks.getGuestInvitation.mockReset().mockRejectedValue(new AppError("NOT_FOUND", "Unavailable", 404));
     mocks.getMemberInvitation.mockReset().mockResolvedValue({ email: "invited@example.com" });
     mocks.redirect.mockReset();
     mocks.router.refresh.mockReset();
@@ -84,7 +90,7 @@ describe("application pages", () => {
     render(await GalleryPage({ params: Promise.resolve({ token: "gallery-token" }) }));
     expect(screen.getByRole("heading", { name: "Wedding gallery" })).toBeVisible();
     render(await InvitationPage({ params: Promise.resolve({ token: "invite-token" }) }));
-    expect(screen.getByRole("heading", { name: "You're invited" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Invitation unavailable" })).toBeVisible();
     render(await WeddingWebsitePage({ params: Promise.resolve({ slug: "liya-and-john" }) }));
     expect(screen.getByRole("heading", { name: "liya-and-john" })).toBeVisible();
   });

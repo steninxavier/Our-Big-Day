@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { listPendingMemberInvitations, listWeddingMembers } from "@/modules/members/member-directory.service";
 import { getOptionalCurrentUser } from "@/server/auth/current-user";
 import { memberRoleLabel } from "@/shared/auth/member-roles";
-import DashboardHeader from "../dashboard-header";
+import DashboardShell from "../dashboard-shell";
 import InviteMemberForm from "../invite-member-form";
 import MemberAction from "./member-action";
 
@@ -24,8 +24,7 @@ export default async function MembersPage() {
   ]);
 
   return (
-    <>
-      <DashboardHeader active="members" />
+    <DashboardShell active="members">
       <main className="mx-auto max-w-6xl px-5 py-10 sm:px-6 sm:py-14">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9a783d]">Your wedding team</p>
@@ -50,6 +49,6 @@ export default async function MembersPage() {
           {isAdmin ? <InviteMemberForm /> : <aside className="rounded-xl border border-[#17233a]/12 bg-[#fdfbf7] p-6 text-sm leading-7 text-[#75655b] shadow-[0_22px_44px_-38px_rgba(23,35,58,0.52)] sm:p-8"><p className="font-[family-name:var(--font-playfair)] text-xl font-semibold text-[#17233a]">Planning together</p><p className="mt-2">Only wedding admins can invite members. Contact an admin if someone else should join your team.</p></aside>}
         </div>
       </main>
-    </>
+    </DashboardShell>
   );
 }

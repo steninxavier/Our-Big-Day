@@ -1271,6 +1271,9 @@ Guest {
 
     reminderCount: Number,
 
+    emailSendLockId: String?, // Internal, excluded from ordinary reads.
+    emailSendLockExpiresAt: Date?, // Short-lived guard against concurrent sends.
+
     rsvpStatus:
         "PENDING"
         | "ATTENDING"
@@ -1329,12 +1332,12 @@ index and excluded from default reads. CRUD projections must never expose it.
 This supersedes the earlier guest token-hash recommendation; sessions and member
 invitation tokens retain their existing HMAC hashing rules.
 
-The initial Guest Management increment creates this secret but exposes no sharing
-URL or public invitation endpoint. The subsequent sharing/RSVP increment
-(2026-09-16) retrieves the existing secret via a wedding-scoped explicit projection.
+The guest management increment does not create this secret; the sharing/RSVP
+increment generates it atomically on first use and retrieves it via a
+wedding-scoped explicit projection. Existing guest records need no migration.
 Public token resolution projects only the owner fields needed for the invitation.
-RSVP updates condition on guest ID, wedding ID, token, `__v`, and current capacity;
-they increment `__v` and set status, attendance count, and `rsvpUpdatedAt` together.
+RSVP updates condition on guest ID, wedding ID, token, `revision`, and current capacity;
+they increment `revision` and set status, attendance count, and `rsvpUpdatedAt` together.
 The wedding-scoped summary aggregates guest groups by status and sums saved
 attendance, independently of maximum party capacity. No new domain collection is
 needed. Existing HMAC-keyed MongoDB rate counters also limit public RSVP writes.

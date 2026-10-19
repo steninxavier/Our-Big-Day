@@ -1,0 +1,33 @@
+.layout { display: grid; gap: 2rem; color: #17233a; }
+.heading { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 1.5rem; }
+.heading h1 { font-family: var(--font-playfair), Georgia, serif; font-size: clamp(2.1rem, 4vw, 3rem); line-height: 1.15; margin: .65rem 0; }
+.heading p:not(.eyebrow), .notice p { color: #75655b; line-height: 1.7; font-size: .9rem; }
+.eyebrow { color: #9a783d; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .17em; }
+.readOnly, .count, .pill { display: inline-block; border-radius: 999px; background: #f1ede6; padding: .4rem .75rem; font-size: .75rem; font-weight: 600; }
+.notice { border: 1px solid #e6dec8; background: #f6efdf; border-radius: .8rem; padding: 1.2rem 1.4rem; }
+.notice p { margin-top: .25rem; }
+.error { padding: 1rem; border-radius: .5rem; background: #f9e9e6; color: #9f3026; }
+.formPanel { background: #fdfbf7; border: 1px solid #e6dec8; border-radius: 1rem; padding: clamp(1.2rem, 3vw, 2rem); }
+.formHeading { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+.formHeading h2, .empty h2 { font-family: var(--font-playfair), Georgia, serif; font-size: 1.5rem; margin-top: .35rem; }
+.form, .formGrid { display: grid; gap: 1rem; }
+.formGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.form label, .filters label { display: grid; gap: .4rem; font-size: .76rem; font-weight: 700; }
+.form input, .form textarea, .form select, .filters select, .filters input { width: 100%; min-width: 0; border: 1px solid #e6dec8; border-radius: .5rem; padding: .7rem .8rem; background: #fdfbf7; color: #17233a; font-size: .87rem; font-weight: 400; }
+.form input:focus-visible, .form textarea:focus-visible, .form select:focus-visible, .filters select:focus-visible, .filters input:focus-visible, .layout button:focus-visible { outline: 2px solid #b58a42; outline-offset: 2px; }
+.actions, .toolbar, .pagination { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.toolbar { justify-content: space-between; margin-bottom: 1rem; }
+.tabs { display: inline-flex; flex-wrap: wrap; gap: .25rem; background: #f1ede6; padding: .3rem; border-radius: .7rem; }
+.tabs button { border: 0; border-radius: .5rem; padding: .65rem .9rem; color: #75655b; font-size: .8rem; cursor: pointer; }
+.tabs button[aria-pressed="true"] { background: #fff; color: #17233a; font-weight: 700; box-shadow: 0 1px 4px #17233a10; }
+.filters { display: flex; align-items: end; flex-wrap: wrap; gap: .8rem; padding: 1rem; margin-bottom: 1rem; background: #fdfbf7; border: 1px solid #e6dec8; border-radius: .8rem; }
+.filters label { flex: 1 1 140px; }
+.link { color: #8a682c; border: 0; background: transparent; font-size: .8rem; font-weight: 700; cursor: pointer; padding: .5rem; }
+.secondary { border: 1px solid #ddd2bc; border-radius: .5rem; padding: .65rem .9rem; background: #fdfbf7; font-size: .8rem; cursor: pointer; }
+.layout button:disabled { opacity: .55; cursor: not-allowed; }
+.list { background: #fdfbf7; border: 1px solid #e6dec8; border-radius: 1rem; overflow: hidden; }
+.row { display: grid; grid-template-columns: minmax(220px, 3fr) repeat(4, minmax(100px, 1fr)) auto; gap: 1rem; align-items: center; padding: 1.3rem; border-bottom: 1px solid #efe8da; font-size: .8rem; }
+.row:last-child { border: 0; }.row > div:not(.rowActions) { display: grid; gap: .35rem; min-width: 0; }.row small { color: #8d7e70; font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; }.title strong { font-size: .9rem; }.title span, .title p { color: #75655b; overflow-wrap: anywhere; }.pill { width: fit-content; text-transform: capitalize; }.high { background: #f7e7e2; color: #9f4e3e; }.rowActions { display: flex; }
+.empty { text-align: center; padding: 3rem 1.5rem; }.empty > span { color: #b58a42; font-size: 2rem; }.empty p { color: #75655b; font-size: .85rem; margin: .6rem auto 1.4rem; }.pagination { justify-content: center; margin-top: 1.2rem; font-size: .8rem; }
+@media (max-width: 900px) { .row { grid-template-columns: repeat(2, minmax(0, 1fr)); }.title { grid-column: 1 / -1; }.rowActions { grid-column: 1 / -1; } }
+@media (max-width: 520px) { .formGrid { grid-template-columns: 1fr; }.heading { align-items: start; }.filters label { flex-basis: 100%; } }

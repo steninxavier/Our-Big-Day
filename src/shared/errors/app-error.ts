@@ -4,6 +4,7 @@ export type ErrorCode =
   | "FORBIDDEN"
   | "NOT_FOUND"
   | "CONFLICT"
+  | "PARTY_SIZE_CHANGED"
   | "LAST_ADMIN"
   | "ALREADY_HAS_WEDDING"
   | "RATE_LIMITED"

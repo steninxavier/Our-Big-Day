@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   logging: {
     incomingRequests: {
       // These URLs may carry a bearer invitation token, including in `next`.
-      ignore: [/^\/member-invitations\//, /^\/api\/(?:public\/)?member-invitations\//, /^\/(?:login|signup)(?:\?|$)/],
+      ignore: [/^\/member-invitations\//, /^\/api\/(?:public\/)?member-invitations\//, /^\/invite\//, /^\/api\/public\/invitations\//, /^\/api\/guests\/[^/]+\/invitation-link/, /^\/(?:login|signup)(?:\?|$)/],
     },
   },
   async headers() {
@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
     ];
     return [
       { source: "/member-invitations/:path*", headers: sensitive },
+      { source: "/invite/:path*", headers: sensitive },
+      { source: "/api/public/invitations/:path*", headers: sensitive },
+      { source: "/api/guests/:guestId/invitation-link", headers: sensitive },
       { source: "/api/public/member-invitations/:path*", headers: sensitive },
       { source: "/api/member-invitations/:path*", headers: sensitive },
       { source: "/login", headers: sensitive },

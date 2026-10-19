@@ -1,13 +1,28 @@
-import Link from "next/link";
-import brandStyles from "@/app/home.module.css";
-import buttonStyles from "@/shared/ui/action-button.module.css";
-import LogoutButton from "./logout-button";
+"use client";
 
-export default function DashboardHeader({ active, showMembers = true }: { active: "dashboard" | "members" | "events"; showMembers?: boolean }) {
+import Link from "next/link";
+import { useState } from "react";
+import brandStyles from "@/app/home.module.css";
+import LogoutButton from "./logout-button";
+import styles from "./dashboard-shell.module.css";
+
+export type DashboardSection = "dashboard" | "events" | "tasks" | "guests" | "members";
+
+const items: { id: DashboardSection; href: string; label: string; icon: string }[] = [
+  { id: "dashboard", href: "/dashboard", label: "Dashboard", icon: "◫" },
+  { id: "events", href: "/dashboard/events", label: "Wedding events", icon: "◇" },
+  { id: "tasks", href: "/dashboard/tasks", label: "Tasks", icon: "✓" },
+  { id: "guests", href: "/dashboard/guests", label: "Guests", icon: "♧" },
+  { id: "members", href: "/dashboard/members", label: "Wedding members", icon: "◎" },
+];
+
+export default function DashboardHeader({ active, showMembers = true }: { active: DashboardSection; showMembers?: boolean }) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <header className="border-b border-[#e6dec8] bg-[#fdfbf7] [--ink:#15233f] [--serif:var(--font-playfair),Georgia,serif]">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-4 px-5 py-5 sm:px-6">
-        <Link href="/dashboard" aria-label="Our Big Day dashboard" className="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b58a42]">
+    <aside className={styles.sidebar}>
+      <div className={styles.brandRow}>
+        <Link href="/dashboard" aria-label="Our Big Day dashboard" className={styles.brandLink} onClick={() => setOpen(false)}>
           <span className={brandStyles.brandLogo}>
             <span className={brandStyles.brandMark} aria-hidden="true">
               <span className={brandStyles.brandMonogramO}>O</span>
@@ -17,13 +32,24 @@ export default function DashboardHeader({ active, showMembers = true }: { active
             <span className={brandStyles.brandName}>Our <em>Big Day</em></span>
           </span>
         </Link>
-        <nav aria-label="Wedding navigation" className="order-3 flex w-full flex-wrap gap-x-6 gap-y-2 text-sm font-semibold sm:order-none sm:w-auto">
-          <Link aria-current={active === "dashboard" ? "page" : undefined} href="/dashboard" className={active === "dashboard" ? "border-b-2 border-[#b58a42] pb-1 text-[#17233a]" : "border-b-2 border-transparent pb-1 text-[#75655b] hover:text-[#17233a]"}>Dashboard</Link>
-          <Link aria-current={active === "events" ? "page" : undefined} href="/dashboard/events" className={active === "events" ? "border-b-2 border-[#b58a42] pb-1 text-[#17233a]" : "border-b-2 border-transparent pb-1 text-[#75655b] hover:text-[#17233a]"}>Wedding events</Link>
-          {showMembers && <Link aria-current={active === "members" ? "page" : undefined} href="/dashboard/members" className={active === "members" ? "border-b-2 border-[#b58a42] pb-1 text-[#17233a]" : "border-b-2 border-transparent pb-1 text-[#75655b] hover:text-[#17233a]"}>Wedding members</Link>}
-        </nav>
-        <LogoutButton buttonClassName={`${buttonStyles.button} ${buttonStyles.headerButton}`} />
+        <button type="button" className={styles.menuToggle} aria-expanded={open} aria-controls="wedding-menu" onClick={() => setOpen((value) => !value)}>
+          <span aria-hidden="true">{open ? "×" : "☰"}</span> {open ? "Close menu" : "Menu"}
+        </button>
       </div>
-    </header>
+      <div id="wedding-menu" className={`${styles.menu} ${open ? styles.menuOpen : ""}`}>
+        <p className={styles.navLabel}>Your wedding space</p>
+        <nav aria-label="Wedding navigation">
+          {items.filter((item) => showMembers || (item.id !== "members" && item.id !== "guests")).map((item) => (
+            <Link key={item.id} href={item.href} aria-current={active === item.id ? "page" : undefined} className={`${styles.navLink} ${active === item.id ? styles.activeLink : ""}`} onClick={() => setOpen(false)}>
+              <span className={styles.navIcon} aria-hidden="true">{item.icon}</span><span>{item.label}</span>
+            </Link>
+          ))}
+        </nav>
+        <div className={styles.sidebarBottom}>
+          <p>Thoughtfully planning the moments that matter.</p>
+          <LogoutButton buttonClassName={styles.signOut} containerClassName={styles.signOutContainer} errorClassName={styles.signOutError} />
+        </div>
+      </div>
+    </aside>
   );
 }
