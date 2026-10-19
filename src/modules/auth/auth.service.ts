@@ -132,6 +132,7 @@ export async function getCurrentUser(sessionToken: string | undefined) {
       brideName: wedding.brideName,
       groomName: wedding.groomName,
       weddingDate: wedding.weddingDate,
+      timeZone: wedding.timeZone,
     },
   };
 }

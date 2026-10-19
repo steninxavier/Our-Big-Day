@@ -1,40 +1,116 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import brandStyles from "@/app/home.module.css";
+import { listPendingMemberInvitations, listWeddingMembers } from "@/modules/members/member-directory.service";
+import { listEvents, upcomingEventsOnly } from "@/modules/events/event.service";
 import { getOptionalCurrentUser } from "@/server/auth/current-user";
+import { memberRoleLabel } from "@/shared/auth/member-roles";
 
 import DashboardHeader from "./dashboard-header";
+import styles from "./dashboard.module.css";
 
 export const metadata = { title: "Dashboard" };
 
+const overview = [
+  { title: "Upcoming events", icon: "✦", detail: "Ceremonies & celebrations" },
+  { title: "Planning tasks", icon: "✓", detail: "Your planning checklist" },
+  { title: "Guests & RSVPs", icon: "◎", detail: "Your guest list & responses" },
+  { title: "Recorded expenses", icon: "₹", detail: "Your wedding finances" },
+];
+
+function formatWeddingDate(date: string) {
+  return new Intl.DateTimeFormat("en", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${date}T00:00:00Z`));
+}
+
 export default async function DashboardPage() {
   const currentUser = await getOptionalCurrentUser();
+  if (!currentUser) redirect("/login");
+  if (!currentUser.wedding || !currentUser.membership) redirect("/onboarding");
 
-  if (!currentUser) {
-    redirect("/login");
-  }
-
-  if (!currentUser.wedding) {
-    redirect("/onboarding");
-  }
-
-  const firstName = currentUser.user.name.trim().split(/\s+/)[0] || "there";
-  const weddingName = `${currentUser.wedding.brideName} & ${currentUser.wedding.groomName}`;
+  const { user, wedding, membership } = currentUser;
+  const firstName = user.name.trim().split(/\s+/)[0] || "there";
+  const isAdmin = membership.role === "ADMIN";
+  const canViewMembers = isAdmin || membership.role === "MANAGER";
+  const [members, invitations, events] = await Promise.all([
+    canViewMembers ? listWeddingMembers(user.id) : Promise.resolve([]),
+    isAdmin ? listPendingMemberInvitations(user.id) : Promise.resolve([]),
+    listEvents(user.id),
+  ]);
+  const upcomingEvents = upcomingEventsOnly(events);
 
   return (
     <>
-    <DashboardHeader active="dashboard" showMembers={currentUser.membership?.role === "ADMIN" || currentUser.membership?.role === "MANAGER"} />
-    <main className="mx-auto max-w-6xl px-6 py-12">
-      <div className="flex flex-wrap items-start justify-between gap-6">
-        <div>
-          <p className="text-sm font-semibold tracking-[0.18em] text-[#a44932] uppercase">Wedding dashboard</p>
-          <h1 className="mt-3 text-4xl font-semibold">Welcome, {firstName}.</h1>
-          <p className="mt-2 text-sm font-medium text-[#75655b]">{weddingName} · {currentUser.wedding.weddingDate}</p>
+      <DashboardHeader active="dashboard" showMembers={canViewMembers} />
+      <main className={styles.main}>
+        <section className={styles.hero} aria-labelledby="welcome-heading">
+          <div>
+            <p className={styles.eyebrow}><span aria-hidden="true">✦</span> Private wedding space <span className={styles.role}>· {memberRoleLabel(membership.role)} access</span></p>
+            <h1 id="welcome-heading">Welcome back, {firstName}.</h1>
+            <p className={styles.weddingName}>{wedding.brideName} &amp; {wedding.groomName}</p>
+            <p className={styles.heroDescription}>A little more organised, a little closer to your big day.</p>
+          </div>
+          <div className={styles.dateCard}>
+            <span className={styles.dateIcon} aria-hidden="true">✦</span>
+            <div><span className={styles.dateLabel}>The celebration</span><p>{formatWeddingDate(wedding.weddingDate)}</p></div>
+          </div>
+        </section>
+
+        {canViewMembers ? (
+          <>
+            <section className={styles.overview} aria-label="Wedding overview">
+              {overview.map((item) => <article className={styles.statCard} key={item.title}>
+                <div className={styles.statTop}><h2>{item.title}</h2><span className={styles.icon} aria-hidden="true">{item.icon}</span></div>
+                <p className={styles.statValue}>{item.title === "Upcoming events" ? upcomingEvents.length : "Coming soon"}</p><p className={styles.muted}>{item.detail}</p>
+              </article>)}
+            </section>
+            <div className={styles.columns}>
+              <div className={styles.stack}>
+                <section className={styles.panel} aria-labelledby="events-heading">
+                  <div className={styles.panelHeading}><div><h2 id="events-heading">Upcoming ceremonies &amp; rituals</h2><p>Every celebration, thoughtfully brought together.</p></div><Link href="/dashboard/events" className={styles.textLink}>View events →</Link></div>
+                  {upcomingEvents.length ? <ul className={styles.memberList}>{upcomingEvents.slice(0, 3).map((event) => <li key={event.id}><div className={styles.memberName}><strong>{event.name}</strong><span>{new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short", timeZone: wedding.timeZone }).format(new Date(event.startsAt))} ({wedding.timeZone})</span></div></li>)}</ul> : <div className={styles.empty}><span className={styles.emptyIcon} aria-hidden="true">✦</span><div><h3>Your celebrations, all in one place</h3><p>Your upcoming events will appear here.</p></div></div>}
+                </section>
+                <section className={styles.panel} aria-labelledby="tasks-heading">
+                  <div className={styles.panelHeading}><div><h2 id="tasks-heading">Your next tasks</h2><p>Small steps towards a beautiful day.</p></div><span className={styles.badge}>Coming soon</span></div>
+                  <div className={styles.empty}><span className={styles.emptyIcon} aria-hidden="true">✓</span><div><h3>Make room for what matters</h3><p>Task planning is not available yet. Once introduced, your next steps will appear here.</p></div></div>
+                </section>
+              </div>
+              <aside className={styles.stack} aria-label="Wedding details">
+                <section className={styles.panel} aria-labelledby="members-heading">
+                  <div className={styles.panelHeading}><div><h2 id="members-heading">Wedding members</h2><p>The people planning alongside you.</p></div><Link href="/dashboard/members" className={styles.textLink}>View all <span aria-hidden="true">→</span></Link></div>
+                  {isAdmin && <div className={styles.invitationNotice}><span aria-hidden="true">✉</span><div><strong>{invitations.length} pending {invitations.length === 1 ? "invitation" : "invitations"}</strong><p>Manage invitations in your wedding members page.</p></div></div>}
+                  <ul className={styles.memberList}>{members.slice(0, 3).map((member) => <li key={member.membershipId}><span className={styles.avatar} aria-hidden="true">{member.user.name.trim().charAt(0).toUpperCase() || "?"}</span><div className={styles.memberName}><strong>{member.user.name}{member.user.id === user.id ? " (You)" : ""}</strong><span>{memberRoleLabel(member.role)}</span></div></li>)}</ul>
+                  {members.length === 0 && <p className={styles.muted}>No members to display.</p>}
+                </section>
+                <section className={styles.panel} aria-labelledby="guests-heading"><div className={styles.panelHeading}><div><h2 id="guests-heading">Guest attendance</h2><p>Keep track of who can celebrate with you.</p></div><span className={styles.badge}>Coming soon</span></div><p className={styles.placeholderText}>Guest lists and RSVP tracking are not available yet.</p></section>
+                <section className={styles.panel} aria-labelledby="expenses-heading"><div className={styles.panelHeading}><div><h2 id="expenses-heading">Recorded expenses</h2><p>A clearer view of your wedding finances.</p></div><span className={styles.badge}>Coming soon</span></div><p className={styles.placeholderText}>Expense tracking is not available yet.</p></section>
+              </aside>
+            </div>
+          </>
+        ) : (
+          <section className={`${styles.panel} ${styles.coordinator}`} aria-labelledby="assigned-heading"><div className={styles.panelHeading}><div><h2 id="assigned-heading">Your assigned events</h2><p>A space for the celebrations you help coordinate.</p></div><Link href="/dashboard/events" className={styles.textLink}>View events →</Link></div>{events.length ? <ul className={styles.memberList}>{events.slice(0, 3).map((event) => <li key={event.id}><div className={styles.memberName}><strong>{event.name}</strong><span>{new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short", timeZone: wedding.timeZone }).format(new Date(event.startsAt))} ({wedding.timeZone})</span></div></li>)}</ul> : <div className={styles.empty}><span className={styles.emptyIcon} aria-hidden="true">✦</span><div><h3>No assigned events yet</h3><p>An admin or manager can assign you to an event.</p></div></div>}</section>
+        )}
+      </main>
+      <footer className={styles.footer}>
+        <div className={styles.footerInner}>
+          <div className={styles.footerTop}>
+            <div className={styles.footerBrand}>
+              <Link href="/dashboard" aria-label="Our Big Day dashboard" className={styles.footerLogo}>
+                <span className={brandStyles.brandLogo}>
+                  <span className={brandStyles.brandMark} aria-hidden="true"><span className={brandStyles.brandMonogramO}>O</span><span className={brandStyles.brandMonogramDivider} /><span className={brandStyles.brandMonogramB}>B</span></span>
+                  <span className={brandStyles.brandName}>Our <em>Big Day</em></span>
+                </span>
+              </Link>
+              <p>Thoughtfully planning the moments that matter.</p>
+            </div>
+            <nav className={styles.footerNav} aria-label="Footer navigation">
+              <span>YOUR WEDDING SPACE</span>
+              <div><Link href="/dashboard">Dashboard</Link><Link href="/dashboard/events">Wedding events</Link>{canViewMembers && <Link href="/dashboard/members">Wedding members</Link>}</div>
+            </nav>
+          </div>
+          <div className={styles.footerBottom}><p>Our Big Day <span aria-hidden="true">·</span> Made for celebrating together</p><p>Plan beautifully, together.</p></div>
         </div>
-      </div>
-      <p className="mt-4 max-w-2xl text-[#75655b]">
-        {currentUser.membership?.role === "EVENT_COORDINATOR" ? "Your assigned events will appear here when event management is available. You do not have access to other wedding planning information." : "Dashboard aggregation, membership protection, and each planning module are represented in the server scaffold."}
-      </p>
-    </main>
+      </footer>
     </>
   );
 }

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getOptionalCurrentUser } from "@/server/auth/current-user";
+import { getInvitationEmailForReturn } from "@/server/auth/invitation-email";
 import { invitationReturnPath } from "@/shared/auth/invitation-return";
 
+import AuthHeader from "../auth-header";
 import LoginForm from "./login-form";
 import styles from "./login.module.css";
 
@@ -12,21 +15,6 @@ export const metadata: Metadata = {
   title: "Couple sign in",
   description: "Sign in to your private Our Big Day wedding space.",
 };
-
-function BrandMark() {
-  return (
-    <span className={styles.brand} aria-label="Our Big Day">
-      <span className={styles.brandMonogram} aria-hidden="true">
-        <span>O</span>
-        <i />
-        <span>B</span>
-      </span>
-      <span className={styles.brandName}>
-        Our <em>Big Day</em>
-      </span>
-    </span>
-  );
-}
 
 function ArrowIcon() {
   return (
@@ -41,34 +29,29 @@ export default async function LoginPage({ searchParams }: { searchParams?: Promi
   if (await getOptionalCurrentUser()) {
     redirect(next ?? "/dashboard");
   }
+  const initialEmail = await getInvitationEmailForReturn(next);
 
   return (
-    <main className={styles.page}>
-      <div className={styles.shell}>
-        <section className={styles.editorialPanel} aria-labelledby="portal-note-title">
+    <>
+    <AuthHeader active="login" next={next} />
+    <main className={`${styles.page} ${styles.loginPage}`}>
+      <div className={`${styles.shell} ${styles.loginShell}`}>
+        <section className={`${styles.editorialPanel} ${styles.loginCover}`} aria-labelledby="portal-note-title">
+          <div className={styles.loginCoverImage} aria-hidden="true">
+            <Image
+              src="/login-kasavu-editorial.png"
+              alt=""
+              fill
+              sizes="(max-width: 800px) 1px, 50vw"
+              className={styles.loginArtworkImage}
+            />
+          </div>
           <div className={styles.editorialMeta}>
             <span>
               <i /> Couple portal
             </span>
             <span>Kerala modernism</span>
             <span>Tithi · muhurtham</span>
-          </div>
-
-          <div className={styles.artwork} aria-hidden="true">
-            <div className={styles.artworkBrass} />
-            <div className={styles.artworkWeave} />
-            <div className={styles.artworkGarland}>
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-            </div>
-            <div className={styles.artworkCaption}>
-              <span>Purity, ritual &amp; heritage</span>
-              <span>Private chamber</span>
-            </div>
           </div>
 
           <blockquote id="portal-note-title">
@@ -80,6 +63,7 @@ export default async function LoginPage({ searchParams }: { searchParams?: Promi
           </div>
         </section>
 
+        <div className={styles.loginFormColumn}>
         <section className={styles.signInCard} aria-labelledby="sign-in-title">
           <div className={styles.signInTopline}>
             <span className={styles.activeMode}>Standard sign in</span>
@@ -87,22 +71,19 @@ export default async function LoginPage({ searchParams }: { searchParams?: Promi
             <span className={styles.vaultNote}>Private by design</span>
           </div>
 
-          <Link className={styles.brandLink} href="/" aria-label="Our Big Day home">
-            <BrandMark />
-          </Link>
-
           <div className={styles.intro}>
             <p className={styles.eyebrow}>Your wedding space</p>
             <h1 id="sign-in-title">Welcome back.</h1>
             <p>Sign in to continue planning your day, together.</p>
           </div>
 
-          <LoginForm next={next} />
+          <LoginForm key={next ?? "ordinary-login"} next={next} initialEmail={initialEmail} />
 
           <p className={styles.newAccount}>
             New to Our Big Day? <Link href={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"}>Create your wedding space <ArrowIcon /></Link>
           </p>
         </section>
+        </div>
       </div>
 
       <footer className={styles.footer}>
@@ -110,5 +91,6 @@ export default async function LoginPage({ searchParams }: { searchParams?: Promi
         <span className={styles.footerQuietly}>A private space for every meaningful detail.</span>
       </footer>
     </main>
+    </>
   );
 }

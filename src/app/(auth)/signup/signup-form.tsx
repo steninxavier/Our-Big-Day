@@ -77,11 +77,11 @@ function EyeIcon({ visible }: { visible: boolean }) {
   );
 }
 
-export default function SignupForm({ next }: { next?: string } = {}) {
+export default function SignupForm({ next, initialEmail = "" }: { next?: string; initialEmail?: string } = {}) {
   const router = useRouter();
   const [values, setValues] = useState<Record<FieldName, string>>({
     name: "",
-    email: "",
+    email: initialEmail,
     password: "",
     confirmPassword: "",
   });

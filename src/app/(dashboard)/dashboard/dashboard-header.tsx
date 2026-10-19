@@ -3,7 +3,7 @@ import brandStyles from "@/app/home.module.css";
 import buttonStyles from "@/shared/ui/action-button.module.css";
 import LogoutButton from "./logout-button";
 
-export default function DashboardHeader({ active, showMembers = true }: { active: "dashboard" | "members"; showMembers?: boolean }) {
+export default function DashboardHeader({ active, showMembers = true }: { active: "dashboard" | "members" | "events"; showMembers?: boolean }) {
   return (
     <header className="border-b border-[#e6dec8] bg-[#fdfbf7] [--ink:#15233f] [--serif:var(--font-playfair),Georgia,serif]">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-4 px-5 py-5 sm:px-6">
@@ -19,6 +19,7 @@ export default function DashboardHeader({ active, showMembers = true }: { active
         </Link>
         <nav aria-label="Wedding navigation" className="order-3 flex w-full flex-wrap gap-x-6 gap-y-2 text-sm font-semibold sm:order-none sm:w-auto">
           <Link aria-current={active === "dashboard" ? "page" : undefined} href="/dashboard" className={active === "dashboard" ? "border-b-2 border-[#b58a42] pb-1 text-[#17233a]" : "border-b-2 border-transparent pb-1 text-[#75655b] hover:text-[#17233a]"}>Dashboard</Link>
+          <Link aria-current={active === "events" ? "page" : undefined} href="/dashboard/events" className={active === "events" ? "border-b-2 border-[#b58a42] pb-1 text-[#17233a]" : "border-b-2 border-transparent pb-1 text-[#75655b] hover:text-[#17233a]"}>Wedding events</Link>
           {showMembers && <Link aria-current={active === "members" ? "page" : undefined} href="/dashboard/members" className={active === "members" ? "border-b-2 border-[#b58a42] pb-1 text-[#17233a]" : "border-b-2 border-transparent pb-1 text-[#75655b] hover:text-[#17233a]"}>Wedding members</Link>}
         </nav>
         <LogoutButton buttonClassName={`${buttonStyles.button} ${buttonStyles.headerButton}`} />

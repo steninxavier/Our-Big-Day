@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getOptionalCurrentUser } from "@/server/auth/current-user";
+import { getInvitationEmailForReturn } from "@/server/auth/invitation-email";
 import { invitationReturnPath } from "@/shared/auth/invitation-return";
 
+import AuthHeader from "../auth-header";
 import SignupForm from "./signup-form";
 import styles from "../login/login.module.css";
 
@@ -12,21 +15,6 @@ export const metadata: Metadata = {
   title: "Create your wedding space",
   description: "Create your private Our Big Day wedding-planning account.",
 };
-
-function BrandMark() {
-  return (
-    <span className={styles.brand} aria-label="Our Big Day">
-      <span className={styles.brandMonogram} aria-hidden="true">
-        <span>O</span>
-        <i />
-        <span>B</span>
-      </span>
-      <span className={styles.brandName}>
-        Our <em>Big Day</em>
-      </span>
-    </span>
-  );
-}
 
 function ArrowIcon() {
   return (
@@ -41,34 +29,29 @@ export default async function SignupPage({ searchParams }: { searchParams?: Prom
   if (await getOptionalCurrentUser()) {
     redirect(next ?? "/dashboard");
   }
+  const initialEmail = await getInvitationEmailForReturn(next);
 
   return (
-    <main className={styles.page}>
-      <div className={styles.shell}>
-        <section className={styles.editorialPanel} aria-labelledby="join-note-title">
+    <>
+    <AuthHeader active="signup" next={next} />
+    <main className={`${styles.page} ${styles.loginPage}`}>
+      <div className={`${styles.shell} ${styles.loginShell}`}>
+        <section className={`${styles.editorialPanel} ${styles.loginCover}`} aria-labelledby="join-note-title">
+          <div className={styles.loginCoverImage} aria-hidden="true">
+            <Image
+              src="/login-kasavu-editorial.png"
+              alt=""
+              fill
+              sizes="(max-width: 800px) 1px, 50vw"
+              className={styles.loginArtworkImage}
+            />
+          </div>
           <div className={styles.editorialMeta}>
             <span>
               <i /> Couple portal
             </span>
             <span>Kerala modernism</span>
             <span>Your first chapter</span>
-          </div>
-
-          <div className={styles.artwork} aria-hidden="true">
-            <div className={styles.artworkBrass} />
-            <div className={styles.artworkWeave} />
-            <div className={styles.artworkGarland}>
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-            </div>
-            <div className={styles.artworkCaption}>
-              <span>One calm place to begin</span>
-              <span>Private by design</span>
-            </div>
           </div>
 
           <blockquote id="join-note-title">
@@ -80,6 +63,7 @@ export default async function SignupPage({ searchParams }: { searchParams?: Prom
           </div>
         </section>
 
+        <div className={styles.loginFormColumn}>
         <section className={styles.signInCard} aria-labelledby="sign-up-title">
           <div className={styles.signInTopline}>
             <span className={styles.activeMode}>Create account</span>
@@ -87,22 +71,19 @@ export default async function SignupPage({ searchParams }: { searchParams?: Prom
             <span className={styles.vaultNote}>Private by design</span>
           </div>
 
-          <Link className={styles.brandLink} href="/" aria-label="Our Big Day home">
-            <BrandMark />
-          </Link>
-
           <div className={styles.intro}>
             <p className={styles.eyebrow}>Your wedding begins here</p>
             <h1 id="sign-up-title">Create your space.</h1>
             <p>{next ? "Create an account using the email address that received your invitation." : "Set up your account now. We'll guide you through creating your first wedding next."}</p>
           </div>
 
-          <SignupForm next={next} />
+          <SignupForm key={next ?? "ordinary-signup"} next={next} initialEmail={initialEmail} />
 
           <p className={styles.newAccount}>
             Already have an account? <Link href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}>Sign in <ArrowIcon /></Link>
           </p>
         </section>
+        </div>
       </div>
 
       <footer className={styles.footer}>
@@ -110,5 +91,6 @@ export default async function SignupPage({ searchParams }: { searchParams?: Prom
         <span className={styles.footerQuietly}>A private space for every meaningful detail.</span>
       </footer>
     </main>
+    </>
   );
 }

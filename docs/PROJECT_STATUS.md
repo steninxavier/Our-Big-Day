@@ -1,6 +1,6 @@
 # Our Big Day — Project Status
 
-> Last updated: 2026-10-17
+> Last updated: 2026-10-18
 > Purpose: an honest implementation snapshot. This document distinguishes working code from planned product scope and should be updated after each material milestone.
 
 ## Current phase
@@ -57,10 +57,14 @@ When implementation and these documents disagree, pause and resolve the differen
 ### Couple authentication interfaces
 
 - Stitch-inspired sign-in page at `/login`.
+- The sign-in and sign-up pages use the same original AI-generated kasavu still-life image as a full-bleed desktop cover, stored locally in `public/login-kasavu-editorial.png`. The cover remains hidden on smaller screens; authentication behavior is unchanged.
+- On 2026-10-18, the shared cover layout passed type checking, lint, a production build, and 11 focused page tests with mocked authentication. The covers' visual appearance has not yet been checked in a live browser.
 - Client-side email and password validation, plus matching server-side Zod validation. Passwords over bcrypt's 72 UTF-8-byte limit are rejected before hashing.
 - Password visibility control, pending state, accessible field errors, and API error feedback.
 - Valid sign-in submissions call `POST /api/auth/login`, then direct Couples with a Wedding to `/dashboard` and new Couples to `/onboarding`.
 - Responsive design: the focused sign-in card is retained on mobile and the editorial panel is displayed on larger screens.
+- Sign-in and sign-up use a shared homepage-style header with the Our Big Day logo and account navigation. The logo links home, and switching between account pages retains a valid member-invitation return path.
+- The authentication header change passed type checking, lint, a production build, and 11 focused page tests on 2026-10-18. The tests passed with a thread worker after the fork worker timed out twice; they use mocked authentication. Live browser appearance has not been verified; a local login request timed out while the machine was under load.
 - Dedicated sign-up page at `/signup`, with name, email, password, and password-confirmation validation.
 - Valid sign-up submissions call `POST /api/auth/signup`, which creates the account and its server-side session before routing the new Couple to `/onboarding`.
 - Server-rendered route protection checks the database-backed session on every relevant page: unauthenticated requests to `/dashboard` redirect to `/login`, while signed-in Couples requesting `/login` or `/signup` redirect to `/dashboard`.
@@ -69,17 +73,36 @@ When implementation and these documents disagree, pause and resolve the differen
 ### Wedding Member invitations
 
 - Role selection now supports Admin, Manager, and Event Coordinator invitations. The selected role is stored with the invitation and used when it is accepted; only an Admin can invite. Admins and Managers can view the member directory; coordinators cannot view it or pending invitations.
-- Event Coordinators currently have no access to events: events, tasks, and explicit coordinator assignment are not implemented. Future event/task endpoints must enforce assigned-event-only access server-side, including cross-wedding isolation. Role changes remain unimplemented.
+- Event Coordinators can access events explicitly assigned to their membership. Tasks remain unimplemented; future task endpoints must enforce assigned-event-only access server-side, including cross-wedding isolation. Role changes remain unimplemented.
 
 - Wedding ADMINs can invite a partner or other trusted person with a selected role from the Wedding members page. A pending invitation uses a random token stored as an HMAC hash and expires after seven days; only one pending invitation per wedding and email is allowed by a partial unique index.
 - Invitations use the Resend email boundary. On a delivery error, the app attempts to revoke the pending invitation so it can be retried; if the database is unavailable, cleanup may require attention. Expired invitations are revoked when an admin sends a replacement.
 - A recipient can open the member invitation, sign in or sign up with the invited email, and return to accept it. Acceptance checks the email and one-wedding-per-user rule, then creates membership and marks the invitation accepted in one MongoDB transaction.
+- Sign-in and sign-up prefill the email from a validated, pending member invitation when following its return link; the field remains editable, and acceptance still checks the signed-in account against the invited address. Invalid, expired, or revoked invitations do not supply a prefill. The address is not added to the URL, and existing no-store/no-referrer protection remains in place.
+- On 2026-10-18, typecheck and lint passed, and 18 focused invitation and authentication-page tests passed with mocked persistence and network. A production build was started; live invitation and browser prefill have not yet been verified.
 - Mutation endpoints require the configured application origin. Invitation responses and pages use no-store/no-referrer headers; development request logging excludes invitation URLs and auth return URLs. Deployment infrastructure and email-provider tracking must also avoid logging or exposing bearer links.
 - `APP_URL`, `RESEND_API_KEY`, `EMAIL_FROM`, and a stable random `MEMBER_INVITATION_SECRET` of at least 32 bytes are required. `APP_URL` must be a recipient-accessible HTTPS origin outside local development. Never commit secrets or expose them to the browser.
 - The authenticated dashboard header links to Wedding members. The directory shows actual wedding members and their roles, with the current user first. ADMINs can also see unexpired pending invitations; MANAGERs cannot access that list. Both directory endpoints resolve the wedding from the authenticated user's server-side membership.
 - The shared dashboard header and Wedding members screen follow the existing brand logo, ivory and indigo palette, Playfair headings, rounded primary button, and onboarding-inspired form and card styling. This presentation update does not change membership or invitation permissions.
 - The sign-out, send-invitation, and accept-invitation actions share the rounded indigo button treatment, hover and focus states, and pointer cursor. The header button uses a compact size, while invitation actions have a comfortable 46px minimum height; pending actions retain a wait cursor.
 - Admins can remove a membership or revoke a pending invitation from the member page after confirmation. Removal keeps the user's login account and session but removes wedding membership; the last Admin cannot be removed. Revocation retains the invitation as REVOKED and releases its pending-email constraint. Both operations enforce the server-derived wedding scope and Admin role in a MongoDB transaction. A wedding revision write serializes these management operations, protecting the last-Admin check. Invitation revocation and acceptance both update the same invitation, so their transactions conflict rather than both committing. Existing-member role changes remain future work. This is a member-management invitation, not a guest RSVP invitation.
+
+### Wedding dashboard presentation
+
+- The dashboard layout is based on the private Stitch collaborative dashboard, with a responsive welcome panel, overview cards, planning sections, and a wedding-team summary. It displays the authenticated user's name and role and the wedding's actual names and date.
+- Admins and Managers see the actual member summary; only Admins see a count of unexpired pending invitations. Coordinators do not query or see either and instead see their assigned events. All member information is obtained through existing server-side authorization checks.
+- The dashboard now displays actual upcoming events and assigned coordinator events. Tasks, guest/RSVP management, expense tracking, and the countdown remain placeholders. Wedding data requires a working database connection.
+- The dashboard footer uses the existing brand mark and a responsive navigation section. Wedding member navigation is shown only to Admins and Managers, matching the header; the footer does not change access controls.
+- The footer update passed typecheck, lint, production build, and 11 mocked dashboard/page tests on 2026-10-18. Signed-in desktop and mobile visual checks remain outstanding.
+- On 2026-10-18, `npm run typecheck`, `npm run lint`, and `npm run build` passed; the focused page suite passed 10 tests with mocked membership data, including Admin, Manager, and Event Coordinator views. The first build and test attempts encountered Windows sandbox `spawn EPERM` and passed on retry outside the sandbox. Later live server-rendered checks verified role-specific event names against Atlas; desktop/mobile browser appearance remains unverified.
+
+### Wedding events
+
+- Admins and Managers can create, edit and archive events at `/dashboard/events`, including assigning existing Event Coordinator memberships. Coordinators see only events assigned to them. Event operations derive the wedding from the signed-in user's current membership; coordinator IDs are checked against that wedding and role.
+- The event form supports event type, name, start/end, venue, address, description and dress code. Entry uses the device's local time zone; lists display times in the wedding's configured time zone. Cover images are deferred pending private storage. Archive hides events instead of permanently deleting them.
+- Event operations require Atlas. The current implementation has no event pagination or restoration interface. Task access remains unimplemented. Permission changes and event mutations have not been tested under concurrent membership removal; coordinator-assignment and mutation races need further hardening before production. Full interactive desktop and mobile browser flows remain unverified.
+- On 2026-10-18, a controlled live Atlas and local-server run passed 33 checks, using directly seeded disposable users, memberships, weddings and sessions. It covered Admin and Manager create/list/archive, Manager edit and coordinator reassignment, direct-event authorization, cross-wedding isolation, coordinator mutation denial, assignment and date validation, server-rendered dashboard visibility, and retained-but-hidden archived events. The synthetic records and their events were deleted and verified absent. This did not exercise account creation, member invitation, or interactive browser flows.
+- On 2026-10-18, the focused event and page suites passed 23 tests in four files with mocked persistence and network, including five new interface tests covering event details and time zone, coordinator controls, required date validation, form submission and assignment, edit error handling, and archive confirmation. Typecheck also passed after adding those tests. The new test file's lint check did not finish; lint and the production build passed on the earlier implementation run. Windows blocked test workers with `spawn EPERM` or startup timeouts in some attempts; the focused suites passed outside the sandbox using a single worker.
 
 ## Verified
 
@@ -144,7 +167,7 @@ Manual browser inspection confirms the homepage and sign-in page render their he
 
 ## Immediate next milestone
 
-Verify invitation delivery, acceptance, revocation, and removal with controlled accounts on Atlas, including transaction races. Implement events and event assignment with server-enforced coordinator scoping before treating assigned-event access as complete. Existing-member role changes remain to be implemented; any future role-change operation must use the same wedding revision lock to preserve the last-Admin invariant.
+Verify invitation and event flows with controlled accounts on Atlas, including coordinator isolation, assignment changes, membership removal, and transaction races. Harden concurrent event authorization before production. Next implement tasks with the same assigned-event-only coordinator scoping. Existing-member role changes remain to be implemented; any future role-change operation must use the same wedding revision lock to preserve the last-Admin invariant.
 
 ## Repository hygiene
 

@@ -11,9 +11,9 @@ describe("invitation authentication return paths", () => {
   it("returns a newly created account to the invitation instead of onboarding", async () => {
     router.replace.mockReset();
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data: { hasWedding: false } }) }));
-    render(<SignupForm next={next} />);
+    render(<SignupForm next={next} initialEmail="qa@example.invalid" />);
+    expect(screen.getByLabelText("Couple space email")).toHaveValue("qa@example.invalid");
     fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "QA Member" } });
-    fireEvent.change(screen.getByLabelText("Couple space email"), { target: { value: "qa@example.invalid" } });
     fireEvent.change(screen.getByLabelText("Create a password"), { target: { value: "password1" } });
     fireEvent.change(screen.getByLabelText("Confirm your password"), { target: { value: "password1" } });
     fireEvent.click(screen.getByRole("button", { name: /create your wedding space/i }));
@@ -22,8 +22,10 @@ describe("invitation authentication return paths", () => {
   it("returns an existing account to the invitation after sign-in", async () => {
     router.replace.mockReset();
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data: { hasWedding: false } }) }));
-    render(<LoginForm next={next} />);
-    fireEvent.change(screen.getByLabelText("Couple space email"), { target: { value: "qa@example.invalid" } });
+    render(<LoginForm next={next} initialEmail="qa@example.invalid" />);
+    expect(screen.getByLabelText("Couple space email")).toHaveValue("qa@example.invalid");
+    fireEvent.change(screen.getByLabelText("Couple space email"), { target: { value: "edited@example.invalid" } });
+    expect(screen.getByLabelText("Couple space email")).toHaveValue("edited@example.invalid");
     fireEvent.change(screen.getByLabelText("Private key"), { target: { value: "password1" } });
     fireEvent.click(screen.getByRole("button", { name: /sign in to wedding space/i }));
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith(next));

@@ -3238,4 +3238,4 @@ require a future reconciliation process; do not add a TTL that drops the only
 metadata reference before object cleanup. No automated orphan cleanup is claimed.
 # Role policy amendment (2026-10-17)
 
-Wedding membership and member invitation roles may be `ADMIN`, `MANAGER`, or `EVENT_COORDINATOR`. Existing roles require no migration. Event assignment persistence is not yet implemented: its future schema must reference the coordinator's membership and event in the same server-derived wedding, and queries must deny unassigned coordinators. This amendment supersedes earlier two-role enum descriptions.
+Wedding membership and member invitation roles may be `ADMIN`, `MANAGER`, or `EVENT_COORDINATOR`. Existing roles require no migration. Events now store assigned coordinator membership IDs in `coordinatorIds`; writes validate that each ID belongs to an Event Coordinator in the server-derived wedding, and reads filter by the requesting coordinator's membership. Concurrent assignment and membership-removal races require further hardening before production. This amendment supersedes earlier two-role enum descriptions.

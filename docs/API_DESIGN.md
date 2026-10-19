@@ -3806,3 +3806,7 @@ settings and QR remain deferred.
 # Role policy amendment (2026-10-17)
 
 The member-invitation `role` accepts `ADMIN`, `MANAGER`, or `EVENT_COORDINATOR`; only an Admin may invite. A coordinator cannot list members or pending invitations. The existing API has no event-assignment, event, or task operations: future operations must enforce the PRD's assigned-event-only policy server-side, including on every list and direct-resource request. This amendment supersedes earlier two-role permission descriptions.
+
+## Event implementation clarification (2026-10-18)
+
+The event implementation now supports `GET` and `POST /api/events` and `GET`, `PATCH`, and `DELETE /api/events/:eventId`. Admins and Managers manage events and assign coordinators using `coordinatorIds`, an array of membership IDs; these IDs must identify Event Coordinators in the same wedding. Coordinators can list or retrieve only active events assigned to their own membership. This replaces the preceding statement that event operations do not exist. The list currently returns all matching active events without pagination; query filtering and pagination described earlier remain unimplemented. Event cover uploads remain deferred. The database stores times as UTC; the event form accepts device-local times and the UI displays them in the wedding time zone. Event mutations and membership-removal races require further hardening and live Atlas verification before production.

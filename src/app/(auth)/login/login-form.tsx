@@ -60,9 +60,9 @@ function EyeIcon({ visible }: { visible: boolean }) {
   );
 }
 
-export default function LoginForm({ next }: { next?: string } = {}) {
+export default function LoginForm({ next, initialEmail = "" }: { next?: string; initialEmail?: string } = {}) {
   const router = useRouter();
-  const [values, setValues] = useState<Record<FieldName, string>>({ email: "", password: "" });
+  const [values, setValues] = useState<Record<FieldName, string>>({ email: initialEmail, password: "" });
   const [errors, setErrors] = useState<FieldErrors>({});
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
