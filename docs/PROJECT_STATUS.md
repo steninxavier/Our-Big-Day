@@ -206,6 +206,10 @@ Manual browser inspection confirms the homepage and sign-in page render their he
 - Existing-member role changes, bulk guest invitation delivery and scheduled reminders, vendor discovery, public-gallery publication, QR uploads, bulk email jobs, and storage-provider integration remain planned rather than completed features.
 - Guest-facing flows must remain scoped capability links. Guests do not create Couple accounts.
 
+### Version 2 backlog — product decision
+
+The following work is explicitly deferred to Version 2: existing-member role changes; budget planning, limits, and variance; vendor discovery; password reset, email verification, TOTP MFA, and recovery codes; and bulk or scheduled guest-invitation and reminder communication. The current individual guest-email and manual-reminder flows remain part of the existing product.
+
 ### Production readiness
 
 - Re-run controlled live sign-up, sign-in, wedding creation, and cleanup verification after an Atlas network/configuration change and before release. The live run verifies HTTP cookie behavior and database transactions; it does not replace a future interactive-browser release check.
@@ -217,7 +221,7 @@ Manual browser inspection confirms the homepage and sign-in page render their he
 
 ## Immediate next milestone
 
-Verify task, invitation and event flows with controlled accounts on Atlas and in interactive browsers, including coordinator isolation, assignment changes, membership removal, and transaction races. Harden concurrent event and task authorization before production. Existing-member role changes remain to be implemented; any future role-change operation must use the same wedding revision lock to preserve the last-Admin invariant.
+The next planned product increment is Livestream configuration, followed by the private gallery, guest upload, stable gallery-link, and QR-sharing flow. Continue controlled Atlas and interactive-browser verification of the existing task, invitation, event, and authorization flows before release. Existing-member role changes are deferred to Version 2; any future role-change operation must use the wedding revision lock to preserve the last-Admin invariant.
 
 ## Repository hygiene
 
