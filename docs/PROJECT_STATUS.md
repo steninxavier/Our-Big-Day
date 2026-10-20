@@ -52,6 +52,7 @@ When implementation and these documents disagree, pause and resolve the differen
 - Wedding creation uses a MongoDB transaction to create the Wedding and its initial `ADMIN` membership together.
 - The server generates the stable website slug and hashes the opaque gallery token before storage; raw gallery credentials are never returned.
 - New Couples are sent directly to onboarding after sign-up or sign-in. Direct dashboard requests from Couples without a Wedding redirect to onboarding; Couples who already have a Wedding are redirected from onboarding to the dashboard.
+- The onboarding header now reuses the shared dark OB monogram and Our Big Day wordmark from the homepage, authentication, and dashboard headers; only the branding treatment changed.
 - Cover-image upload is intentionally deferred until the private storage/upload feature exists; the form states this explicitly rather than collecting an unusable file.
 
 ### Couple authentication interfaces

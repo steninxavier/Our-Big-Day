@@ -41,64 +41,6 @@
   text-decoration: none;
 }
 
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.brandMonogram {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  grid-template-columns: 1fr 1px 1fr;
-  place-items: center;
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
-  background: var(--cream);
-  color: var(--ink);
-  font-family: var(--font-playfair), Georgia, serif;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: -0.1em;
-}
-
-.brandMonogram i {
-  width: 1px;
-  height: 12px;
-  background: var(--gold);
-}
-
-.brandMonogram span:last-child {
-  color: #8d6527;
-}
-
-.brandName {
-  display: grid;
-  font-family: var(--font-playfair), Georgia, serif;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.04em;
-  line-height: 0.92;
-}
-
-.brandName::after {
-  content: "PLAN TOGETHER. CELEBRATE FULLY.";
-  margin-top: 3px;
-  color: #6f6049;
-  font-family: var(--font-jakarta), Arial, sans-serif;
-  font-size: 8px;
-  font-style: normal;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-}
-
-.brandName em {
-  color: #8d6527;
-  font-style: italic;
-  font-weight: 500;
-}
-
 .headerActions {
   display: flex;
   align-items: center;
@@ -714,10 +656,6 @@
     padding: 0 18px;
   }
 
-  .brandName {
-    font-size: 13px;
-  }
-
   .headerActions {
     gap: 8px;
   }
@@ -784,9 +722,6 @@
     display: none;
   }
 
-  .brandName::after {
-    font-size: 7px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

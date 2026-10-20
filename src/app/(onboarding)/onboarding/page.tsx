@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import homeStyles from "@/app/home.module.css";
 import LogoutButton from "@/app/(dashboard)/dashboard/logout-button";
 import { getOptionalCurrentUser } from "@/server/auth/current-user";
 
@@ -12,21 +13,6 @@ export const metadata: Metadata = {
   title: "Create your wedding",
   description: "Set up your private Our Big Day wedding space.",
 };
-
-function BrandMark() {
-  return (
-    <span className={styles.brand} aria-label="Our Big Day">
-      <span className={styles.brandMonogram} aria-hidden="true">
-        <span>O</span>
-        <i />
-        <span>B</span>
-      </span>
-      <span className={styles.brandName}>
-        Our <em>Big Day</em>
-      </span>
-    </span>
-  );
-}
 
 function WeddingPathIllustration() {
   return (
@@ -71,7 +57,14 @@ export default async function OnboardingPage() {
       <div className={styles.frame}>
         <header className={styles.header}>
           <Link className={styles.brandLink} href="/" aria-label="Our Big Day home">
-            <BrandMark />
+            <span className={homeStyles.brandLogo}>
+              <span className={homeStyles.brandMark} aria-hidden="true">
+                <span className={homeStyles.brandMonogramO}>O</span>
+                <span className={homeStyles.brandMonogramDivider} />
+                <span className={homeStyles.brandMonogramB}>B</span>
+              </span>
+              <span className={homeStyles.brandName}>Our <em>Big Day</em></span>
+            </span>
           </Link>
 
           <div className={styles.headerActions}>
