@@ -1,6 +1,6 @@
 # Our Big Day — Project Status
 
-> Last updated: 2026-10-19
+> Last updated: 2026-10-20
 > Purpose: an honest implementation snapshot. This document distinguishes working code from planned product scope and should be updated after each material milestone.
 
 ## Current phase
@@ -121,6 +121,15 @@ When implementation and these documents disagree, pause and resolve the differen
 - On 2026-10-20, expense editors were changed to fetch the latest record on opening and refresh the list after a conflict while preserving the unsaved draft. Archived events retain their names and remain available in expense filters; they may be retained on existing expenses but cannot be newly linked. Typecheck, lint and production build passed, and eleven focused expense validation, authorization, conflict-recovery and interface tests passed with mocked persistence and network. The sandboxed build compiled but its TypeScript worker was blocked by `spawn EPERM`; the outside-sandbox retry passed. Live Atlas and interactive browser verification remain outstanding.
 - Earlier verification of the expense increment was incomplete: a type-name collision was corrected, a concurrent build interruption left generated types missing, and several checks stalled or encountered sandbox `spawn EPERM`. See the later verification note above for current results.
 
+### My Vendors
+
+- Admins and Managers can use the Stitch-inspired `/dashboard/vendors` directory to create, view, edit, search, filter, and archive private vendor records. Event Coordinators are blocked from the page and its APIs, and the dashboard navigation and summary use the same role boundary.
+- Each Vendor belongs to the server-derived Wedding and supports the PRD fields: name, category, contact person, phone, email, address, website, optional agreed INR cost, related events, and notes. Values are validated with Zod at the API boundary; money is stored as integer paise. Related events must be active and belong to the same Wedding, although an archived event may be retained on an existing vendor for historical clarity.
+- Deleting a vendor archives it rather than removing it, preserving the historical relationship for expenses. Vendor edits use revisions and return `409 CONFLICT` for stale drafts. The editor fetches the current record before opening and retains an unsaved draft if a conflict occurs.
+- Expense records now optionally link to an active same-Wedding vendor. The expense screen supports vendor filtering, displays the linked vendor, and preserves an existing archived vendor link while preventing a newly archived vendor from being selected.
+- The dashboard shows actual active-vendor and category counts to Admins and Managers. Vendor discovery, Google Places configuration, discovery-to-vendor conversion, marketplace activity, payment schedules, and payment processing remain unimplemented.
+- On 2026-10-20, typecheck passed; ESLint completed for `src` and `tests`; five focused vendor service/schema tests, two vendor interface tests, and eleven expense regression tests passed with mocked persistence and network. The production build compiled and generated current route artifacts, but the terminal runner did not return a final exit status, so it remains formally unverified. Live Atlas CRUD, signed-in browser interaction, and visual comparison against Stitch remain outstanding.
+
 ## Verified
 
 The checks below describe earlier verification. After implementing member removal and invitation revocation on 2026-10-17, `npm run typecheck`, `npm run build`, and `npx eslint src tests` passed. The full automated suite passed 111 tests in 19 suites, and the four focused member-management suites passed 21 tests. A later full-workspace `npm run lint -- tests/components/invitation-auth-return.test.tsx` passed after the temporary invitation QA script was removed. MongoDB transaction races, live removal, and live revocation have not yet been verified against Atlas; automated tests use mocked persistence.
@@ -166,7 +175,7 @@ Manual browser inspection confirms the homepage and sign-in page render their he
 - Atlas failures return a generic `503 SERVICE_UNAVAILABLE` response after a 10-second selection timeout. A failed connection is not cached, so the running application retries normally after Atlas network recovery. Atlas was reachable from this computer during the 2026-10-15 QA run; re-run the controlled test after a network or Network Access change.
 - TOTP MFA, recovery codes, password reset UI, and email verification flows are not implemented.
 - Member invitation code requires a stable `MEMBER_INVITATION_SECRET` in `.env.local`; one has been configured locally. The local sender uses a placeholder domain and the application URL is localhost. Real Resend delivery and a complete interactive-browser invitation journey remain unverified. On 2026-10-17 the running server assigned MANAGER when accepting a synthetic EVENT_COORDINATOR invitation, despite current-source live-Atlas service tests passing all roles with email mocked; verify the running server version and repeat before relying on coordinator permissions. Invitation URLs are bearer secrets and must be redacted by hosting infrastructure.
-- The dashboard displays the current Couple's wedding identity, upcoming events, guest-party totals, saved RSVP attendance and expense totals for permitted roles. Task counts, upcoming-task summaries and vendors remain placeholders.
+- The dashboard displays the current Couple's wedding identity, upcoming events, guest-party totals, saved RSVP attendance, recorded expense totals, and active vendor/category counts for permitted roles. Task counts and upcoming-task summaries remain placeholders.
 
 ### Guest management
 
@@ -185,7 +194,7 @@ Manual browser inspection confirms the homepage and sign-in page render their he
 
 ### Product domains
 
-- Existing-member role changes, bulk guest invitation delivery and scheduled reminders, vendors, public wedding sites, gallery, QR uploads, bulk email jobs, and storage-provider integration remain planned rather than completed features.
+- Existing-member role changes, bulk guest invitation delivery and scheduled reminders, vendor discovery, public wedding sites, gallery, QR uploads, bulk email jobs, and storage-provider integration remain planned rather than completed features.
 - Guest-facing flows must remain scoped capability links. Guests do not create Couple accounts.
 
 ### Production readiness

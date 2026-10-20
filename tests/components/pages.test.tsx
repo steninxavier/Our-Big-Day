@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   listEvents: vi.fn(),
   listGuests: vi.fn(),
   expenseSummary: vi.fn(),
+  vendorSummary: vi.fn(),
   getGuestInvitation: vi.fn(),
   getMemberInvitation: vi.fn(),
   redirect: vi.fn(),
@@ -24,6 +25,7 @@ vi.mock("@/modules/members/member-directory.service", () => ({
 vi.mock("@/modules/events/event.service", () => ({ listEvents: mocks.listEvents, upcomingEventsOnly: (events: unknown[]) => events }));
 vi.mock("@/modules/guests/guest.service", () => ({ listGuests: mocks.listGuests }));
 vi.mock("@/modules/expenses/expense.service", () => ({ expenseSummary: mocks.expenseSummary }));
+vi.mock("@/modules/vendors/vendor.service", () => ({ vendorSummary: mocks.vendorSummary }));
 vi.mock("@/modules/guests/invitation.service", () => ({ getInvitation: mocks.getGuestInvitation }));
 vi.mock("@/modules/members/invitation.service", () => ({ getMemberInvitation: mocks.getMemberInvitation }));
 vi.mock("next/navigation", () => ({
@@ -68,6 +70,7 @@ describe("application pages", () => {
     mocks.listEvents.mockReset().mockResolvedValue([]);
     mocks.listGuests.mockReset().mockResolvedValue({ summary: { total: 0, capacity: 0 } });
     mocks.expenseSummary.mockReset().mockResolvedValue({ totalExpensePaise: 0, count: 0 });
+    mocks.vendorSummary.mockReset().mockResolvedValue({ count: 0, categoryCount: 0 });
     mocks.getGuestInvitation.mockReset().mockRejectedValue(new AppError("NOT_FOUND", "Unavailable", 404));
     mocks.getMemberInvitation.mockReset().mockResolvedValue({ email: "invited@example.com" });
     mocks.redirect.mockReset();
@@ -240,6 +243,7 @@ describe("application pages", () => {
     expect(mocks.listWeddingMembers).not.toHaveBeenCalled();
     expect(mocks.listPendingMemberInvitations).not.toHaveBeenCalled();
     expect(mocks.expenseSummary).not.toHaveBeenCalled();
+    expect(mocks.vendorSummary).not.toHaveBeenCalled();
   });
 
   it("protects onboarding and renders it only for signed-in users without a wedding", async () => {

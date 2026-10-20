@@ -6,6 +6,22 @@
 .brandLink:focus-visible, .menuToggle:focus-visible, .navLink:focus-visible, .signOut:focus-visible { outline: 2px solid #b58a42; outline-offset: 3px; }
 .menuToggle { display: none; }
 .menu { display: flex; flex: 1; flex-direction: column; min-height: 0; overflow-y: auto; padding: 14px 14px 20px; }
+.menu::-webkit-scrollbar { width: 6px; }
+.menu::-webkit-scrollbar-button,
+.menu::-webkit-scrollbar-button:single-button,
+.menu::-webkit-scrollbar-button:vertical:decrement,
+.menu::-webkit-scrollbar-button:vertical:increment {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+.menu::-webkit-scrollbar-track { background: transparent; }
+.menu::-webkit-scrollbar-thumb { background: #d8d0c2; border-radius: 999px; }
+.menu::-webkit-scrollbar-thumb:hover { background: #c8bda9; }
+@supports (-moz-appearance: none) {
+  .menu { scrollbar-width: thin; scrollbar-color: #d8d0c2 transparent; }
+}
 .navLabel { padding: 0 12px 13px; color: #988b78; font-size: 10px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
 .menu nav { display: grid; gap: 5px; }
 .navLink { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 12px; border: 1px solid transparent; border-radius: 7px; color: #6e6b68; font-size: 13px; font-weight: 600; transition: background .15s, color .15s; }

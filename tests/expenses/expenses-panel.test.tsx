@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ExpensesPanel from "@/app/(dashboard)/dashboard/expenses/expenses-panel";
 
-const expense = { id: "111111111111111111111111", title: "Venue", amountPaise: 10000, currency: "INR" as const, expenseDate: "2026-10-20", category: "VENUE" as const, eventId: "222222222222222222222222", notes: "", revision: 0 };
+const expense = { id: "111111111111111111111111", title: "Venue", amountPaise: 10000, currency: "INR" as const, expenseDate: "2026-10-20", category: "VENUE" as const, eventId: "222222222222222222222222", vendorId: null, notes: "", revision: 0 };
 const newer = { ...expense, title: "Updated venue", amountPaise: 20000, revision: 1 };
 const pagination = { page: 1, limit: 20, total: 1, totalPages: 1 };
 const summary = { totalExpensePaise: 10000, currency: "INR", count: 1, byCategory: [] };

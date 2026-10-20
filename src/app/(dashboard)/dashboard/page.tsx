@@ -6,6 +6,7 @@ import { listPendingMemberInvitations, listWeddingMembers } from "@/modules/memb
 import { listEvents, upcomingEventsOnly } from "@/modules/events/event.service";
 import { listGuests } from "@/modules/guests/guest.service";
 import { expenseSummary } from "@/modules/expenses/expense.service";
+import { vendorSummary } from "@/modules/vendors/vendor.service";
 import { getOptionalCurrentUser } from "@/server/auth/current-user";
 import { memberRoleLabel } from "@/shared/auth/member-roles";
 
@@ -34,12 +35,13 @@ export default async function DashboardPage() {
   const firstName = user.name.trim().split(/\s+/)[0] || "there";
   const isAdmin = membership.role === "ADMIN";
   const canViewMembers = isAdmin || membership.role === "MANAGER";
-  const [members, invitations, events, guests, expenses] = await Promise.all([
+  const [members, invitations, events, guests, expenses, vendors] = await Promise.all([
     canViewMembers ? listWeddingMembers(user.id) : Promise.resolve([]),
     isAdmin ? listPendingMemberInvitations(user.id) : Promise.resolve([]),
     listEvents(user.id),
     canViewMembers ? listGuests(user.id, { page: 1, limit: 1 }) : Promise.resolve(null),
     canViewMembers ? expenseSummary(user.id) : Promise.resolve(null),
+    canViewMembers ? vendorSummary(user.id) : Promise.resolve(null),
   ]);
   const upcomingEvents = upcomingEventsOnly(events);
 
@@ -87,6 +89,7 @@ export default async function DashboardPage() {
                 </section>
                 <section className={styles.panel} aria-labelledby="guests-heading"><div className={styles.panelHeading}><div><h2 id="guests-heading">Guest list</h2><p>Keep your invitations organized.</p></div><Link href="/dashboard/guests" className={styles.textLink}>View guests →</Link></div><p className={styles.placeholderText}>{guests?.summary.total ?? 0} guest parties · {guests?.summary.capacity ?? 0} maximum attendees · {guests?.summary.confirmedAttendees ?? 0} confirmed attendees.</p></section>
                 <section className={styles.panel} aria-labelledby="expenses-heading"><div className={styles.panelHeading}><div><h2 id="expenses-heading">Recorded expenses</h2><p>A clearer view of your wedding finances.</p></div><Link href="/dashboard/expenses" className={styles.textLink}>View expenses →</Link></div><p className={styles.placeholderText}>{expenses?.count ?? 0} expense records.</p></section>
+                <section className={styles.panel} aria-labelledby="vendors-heading"><div className={styles.panelHeading}><div><h2 id="vendors-heading">My vendors</h2><p>The trusted people bringing your celebrations together.</p></div><Link href="/dashboard/vendors" className={styles.textLink}>View vendors →</Link></div><p className={styles.placeholderText}>{vendors?.count ?? 0} active {vendors?.count === 1 ? "vendor" : "vendors"} · {vendors?.categoryCount ?? 0} {vendors?.categoryCount === 1 ? "category" : "categories"} represented.</p></section>
               </aside>
             </div>
           </>
@@ -108,7 +111,7 @@ export default async function DashboardPage() {
             </div>
             <nav className={styles.footerNav} aria-label="Footer navigation">
               <span>YOUR WEDDING SPACE</span>
-              <div><Link href="/dashboard">Dashboard</Link><Link href="/dashboard/events">Wedding events</Link><Link href="/dashboard/tasks">Tasks</Link>{canViewMembers && <><Link href="/dashboard/guests">Guests</Link><Link href="/dashboard/expenses">Expenses</Link><Link href="/dashboard/members">Wedding members</Link></>}</div>
+              <div><Link href="/dashboard">Dashboard</Link><Link href="/dashboard/events">Wedding events</Link><Link href="/dashboard/tasks">Tasks</Link>{canViewMembers && <><Link href="/dashboard/guests">Guests</Link><Link href="/dashboard/expenses">Expenses</Link><Link href="/dashboard/vendors">My vendors</Link><Link href="/dashboard/members">Wedding members</Link></>}</div>
             </nav>
           </div>
           <div className={styles.footerBottom}><p>Our Big Day <span aria-hidden="true">·</span> Made for celebrating together</p><p>Plan beautifully, together.</p></div>
