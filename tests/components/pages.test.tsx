@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   listGuests: vi.fn(),
   expenseSummary: vi.fn(),
   vendorSummary: vi.fn(),
+  getPublicWeddingWebsite: vi.fn(),
   getGuestInvitation: vi.fn(),
   getMemberInvitation: vi.fn(),
   redirect: vi.fn(),
@@ -26,6 +27,7 @@ vi.mock("@/modules/events/event.service", () => ({ listEvents: mocks.listEvents,
 vi.mock("@/modules/guests/guest.service", () => ({ listGuests: mocks.listGuests }));
 vi.mock("@/modules/expenses/expense.service", () => ({ expenseSummary: mocks.expenseSummary }));
 vi.mock("@/modules/vendors/vendor.service", () => ({ vendorSummary: mocks.vendorSummary }));
+vi.mock("@/modules/weddings/website.service", () => ({ getPublicWeddingWebsite: mocks.getPublicWeddingWebsite }));
 vi.mock("@/modules/guests/invitation.service", () => ({ getInvitation: mocks.getGuestInvitation }));
 vi.mock("@/modules/members/invitation.service", () => ({ getMemberInvitation: mocks.getMemberInvitation }));
 vi.mock("next/navigation", () => ({
@@ -71,6 +73,7 @@ describe("application pages", () => {
     mocks.listGuests.mockReset().mockResolvedValue({ summary: { total: 0, capacity: 0 } });
     mocks.expenseSummary.mockReset().mockResolvedValue({ totalExpensePaise: 0, count: 0 });
     mocks.vendorSummary.mockReset().mockResolvedValue({ count: 0, categoryCount: 0 });
+    mocks.getPublicWeddingWebsite.mockReset().mockResolvedValue({ brideName: "Liya", groomName: "John", title: "Liya & John", description: "", weddingDate: "2027-02-14", timeZone: "Asia/Kolkata", location: "Kochi", theme: "MINIMAL_ELEGANT", welcomeMessage: "", gallery: { enabled: false }, livestream: { enabled: false, youtubeUrl: null }, events: [] });
     mocks.getGuestInvitation.mockReset().mockRejectedValue(new AppError("NOT_FOUND", "Unavailable", 404));
     mocks.getMemberInvitation.mockReset().mockResolvedValue({ email: "invited@example.com" });
     mocks.redirect.mockReset();
@@ -78,7 +81,7 @@ describe("application pages", () => {
     mocks.router.replace.mockReset();
   });
 
-  it("renders the public shell, landing page, and placeholder link experiences", async () => {
+  it("renders the public shell, landing page, and public website experience", async () => {
     render(RootLayout({ children: <p>Child content</p> }));
     expect(screen.getByText("Child content")).toBeVisible();
 
@@ -98,7 +101,8 @@ describe("application pages", () => {
     render(await InvitationPage({ params: Promise.resolve({ token: "invite-token" }) }));
     expect(screen.getByRole("heading", { name: "Invitation unavailable" })).toBeVisible();
     render(await WeddingWebsitePage({ params: Promise.resolve({ slug: "liya-and-john" }) }));
-    expect(screen.getByRole("heading", { name: "liya-and-john" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Liya & John" })).toBeVisible();
+    expect(mocks.getPublicWeddingWebsite).toHaveBeenCalledWith("liya-and-john");
   });
 
   it("shows the wedding dashboard in the header for a signed-in member", async () => {
@@ -207,6 +211,7 @@ describe("application pages", () => {
     const footer = within(screen.getByRole("contentinfo"));
     expect(footer.getByRole("link", { name: "Wedding events" })).toHaveAttribute("href", "/dashboard/events");
     expect(footer.getByRole("link", { name: "Wedding members" })).toHaveAttribute("href", "/dashboard/members");
+    expect(footer.getByRole("link", { name: "Wedding website" })).toHaveAttribute("href", "/dashboard/website");
 
     mocks.getOptionalCurrentUser.mockResolvedValue({
       user: { id: "user-1", name: "   " },
@@ -239,6 +244,7 @@ describe("application pages", () => {
     expect(screen.getByRole("heading", { name: "Your assigned events" })).toBeVisible();
     expect(screen.queryByRole("heading", { name: "Wedding members" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Wedding members" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Wedding website" })).not.toBeInTheDocument();
     expect(within(screen.getByRole("contentinfo")).getByRole("link", { name: "Wedding events" })).toHaveAttribute("href", "/dashboard/events");
     expect(mocks.listWeddingMembers).not.toHaveBeenCalled();
     expect(mocks.listPendingMemberInvitations).not.toHaveBeenCalled();

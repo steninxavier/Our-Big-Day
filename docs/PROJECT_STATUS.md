@@ -130,6 +130,14 @@ When implementation and these documents disagree, pause and resolve the differen
 - The dashboard shows actual active-vendor and category counts to Admins and Managers. Vendor discovery, Google Places configuration, discovery-to-vendor conversion, marketplace activity, payment schedules, and payment processing remain unimplemented.
 - On 2026-10-20, typecheck passed; ESLint completed for `src` and `tests`; five focused vendor service/schema tests, two vendor interface tests, and eleven expense regression tests passed with mocked persistence and network. The production build compiled and generated current route artifacts, but the terminal runner did not return a final exit status, so it remains formally unverified. Live Atlas CRUD, signed-in browser interaction, and visual comparison against Stitch remain outstanding.
 
+### Wedding website
+
+- Admins and Managers can configure `/dashboard/website`: choose one of the three predefined themes, edit a welcome message, publish or unpublish, copy the stable system-managed URL, and preview the public page. Event Coordinators are redirected from settings and the service/API enforce the same server-derived role boundary.
+- A published website is available at `/w/[slug]`; unpublished or unknown slugs return 404. It shows the couple information, wedding date and location, welcome content, and only active wedding events with their time, venue, dress code, and a Google Maps search link. Archived events are intentionally excluded automatically.
+- The public API has no authentication and returns only selected public fields. It exposes the gallery/livestream enabled state; an existing valid YouTube URL is rendered with the privacy-enhanced YouTube embed origin. The stable slug cannot be changed through the settings API.
+- Cover-image upload, a browsable public gallery, gallery-link publication, and the dashboard controls for configuring a livestream are not implemented because the required private-storage/gallery and livestream settings flows do not yet exist. The public page therefore uses code-native artwork and omits those unavailable capabilities instead of exposing private storage details.
+- On 2026-10-20, typecheck, lint, and the production build passed, and 16 focused service and page tests passed with mocked persistence and network. Live Atlas data and signed-in/public-browser visual checks remain to be completed.
+
 ## Verified
 
 The checks below describe earlier verification. After implementing member removal and invitation revocation on 2026-10-17, `npm run typecheck`, `npm run build`, and `npx eslint src tests` passed. The full automated suite passed 111 tests in 19 suites, and the four focused member-management suites passed 21 tests. A later full-workspace `npm run lint -- tests/components/invitation-auth-return.test.tsx` passed after the temporary invitation QA script was removed. MongoDB transaction races, live removal, and live revocation have not yet been verified against Atlas; automated tests use mocked persistence.
@@ -194,7 +202,7 @@ Manual browser inspection confirms the homepage and sign-in page render their he
 
 ### Product domains
 
-- Existing-member role changes, bulk guest invitation delivery and scheduled reminders, vendor discovery, public wedding sites, gallery, QR uploads, bulk email jobs, and storage-provider integration remain planned rather than completed features.
+- Existing-member role changes, bulk guest invitation delivery and scheduled reminders, vendor discovery, public-gallery publication, QR uploads, bulk email jobs, and storage-provider integration remain planned rather than completed features.
 - Guest-facing flows must remain scoped capability links. Guests do not create Couple accounts.
 
 ### Production readiness

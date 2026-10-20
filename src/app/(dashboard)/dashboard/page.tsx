@@ -111,7 +111,7 @@ export default async function DashboardPage() {
             </div>
             <nav className={styles.footerNav} aria-label="Footer navigation">
               <span>YOUR WEDDING SPACE</span>
-              <div><Link href="/dashboard">Dashboard</Link><Link href="/dashboard/events">Wedding events</Link><Link href="/dashboard/tasks">Tasks</Link>{canViewMembers && <><Link href="/dashboard/guests">Guests</Link><Link href="/dashboard/expenses">Expenses</Link><Link href="/dashboard/vendors">My vendors</Link><Link href="/dashboard/members">Wedding members</Link></>}</div>
+              <div><Link href="/dashboard">Dashboard</Link><Link href="/dashboard/events">Wedding events</Link><Link href="/dashboard/tasks">Tasks</Link>{canViewMembers && <><Link href="/dashboard/guests">Guests</Link><Link href="/dashboard/expenses">Expenses</Link><Link href="/dashboard/vendors">My vendors</Link><Link href="/dashboard/website">Wedding website</Link><Link href="/dashboard/members">Wedding members</Link></>}</div>
             </nav>
           </div>
           <div className={styles.footerBottom}><p>Our Big Day <span aria-hidden="true">·</span> Made for celebrating together</p><p>Plan beautifully, together.</p></div>
