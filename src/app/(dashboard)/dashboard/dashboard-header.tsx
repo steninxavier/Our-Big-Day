@@ -6,13 +6,14 @@ import brandStyles from "@/app/home.module.css";
 import LogoutButton from "./logout-button";
 import styles from "./dashboard-shell.module.css";
 
-export type DashboardSection = "dashboard" | "events" | "tasks" | "guests" | "members";
+export type DashboardSection = "dashboard" | "events" | "tasks" | "guests" | "expenses" | "members";
 
 const items: { id: DashboardSection; href: string; label: string; icon: string }[] = [
   { id: "dashboard", href: "/dashboard", label: "Dashboard", icon: "◫" },
   { id: "events", href: "/dashboard/events", label: "Wedding events", icon: "◇" },
   { id: "tasks", href: "/dashboard/tasks", label: "Tasks", icon: "✓" },
   { id: "guests", href: "/dashboard/guests", label: "Guests", icon: "♧" },
+  { id: "expenses", href: "/dashboard/expenses", label: "Expenses", icon: "₹" },
   { id: "members", href: "/dashboard/members", label: "Wedding members", icon: "◎" },
 ];
 
@@ -39,7 +40,7 @@ export default function DashboardHeader({ active, showMembers = true }: { active
       <div id="wedding-menu" className={`${styles.menu} ${open ? styles.menuOpen : ""}`}>
         <p className={styles.navLabel}>Your wedding space</p>
         <nav aria-label="Wedding navigation">
-          {items.filter((item) => showMembers || (item.id !== "members" && item.id !== "guests")).map((item) => (
+          {items.filter((item) => showMembers || (item.id !== "members" && item.id !== "guests" && item.id !== "expenses")).map((item) => (
             <Link key={item.id} href={item.href} aria-current={active === item.id ? "page" : undefined} className={`${styles.navLink} ${active === item.id ? styles.activeLink : ""}`} onClick={() => setOpen(false)}>
               <span className={styles.navIcon} aria-hidden="true">{item.icon}</span><span>{item.label}</span>
             </Link>

@@ -5,6 +5,7 @@ import brandStyles from "@/app/home.module.css";
 import { listPendingMemberInvitations, listWeddingMembers } from "@/modules/members/member-directory.service";
 import { listEvents, upcomingEventsOnly } from "@/modules/events/event.service";
 import { listGuests } from "@/modules/guests/guest.service";
+import { expenseSummary } from "@/modules/expenses/expense.service";
 import { getOptionalCurrentUser } from "@/server/auth/current-user";
 import { memberRoleLabel } from "@/shared/auth/member-roles";
 
@@ -33,11 +34,12 @@ export default async function DashboardPage() {
   const firstName = user.name.trim().split(/\s+/)[0] || "there";
   const isAdmin = membership.role === "ADMIN";
   const canViewMembers = isAdmin || membership.role === "MANAGER";
-  const [members, invitations, events, guests] = await Promise.all([
+  const [members, invitations, events, guests, expenses] = await Promise.all([
     canViewMembers ? listWeddingMembers(user.id) : Promise.resolve([]),
     isAdmin ? listPendingMemberInvitations(user.id) : Promise.resolve([]),
     listEvents(user.id),
     canViewMembers ? listGuests(user.id, { page: 1, limit: 1 }) : Promise.resolve(null),
+    canViewMembers ? expenseSummary(user.id) : Promise.resolve(null),
   ]);
   const upcomingEvents = upcomingEventsOnly(events);
 
@@ -62,7 +64,7 @@ export default async function DashboardPage() {
             <section className={styles.overview} aria-label="Wedding overview">
               {overview.map((item) => <article className={styles.statCard} key={item.title}>
                 <div className={styles.statTop}><h2>{item.title}</h2><span className={styles.icon} aria-hidden="true">{item.icon}</span></div>
-                <p className={styles.statValue}>{item.title === "Upcoming events" ? upcomingEvents.length : item.title === "Planning tasks" ? "Available" : item.title === "Guest parties" ? guests?.summary.total ?? 0 : "Coming soon"}</p><p className={styles.muted}>{item.detail}</p>
+                <p className={styles.statValue}>{item.title === "Upcoming events" ? upcomingEvents.length : item.title === "Planning tasks" ? "Available" : item.title === "Guest parties" ? guests?.summary.total ?? 0 : new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format((expenses?.totalExpensePaise ?? 0) / 100)}</p><p className={styles.muted}>{item.detail}</p>
               </article>)}
             </section>
             <div className={styles.columns}>
@@ -84,7 +86,7 @@ export default async function DashboardPage() {
                   {members.length === 0 && <p className={styles.muted}>No members to display.</p>}
                 </section>
                 <section className={styles.panel} aria-labelledby="guests-heading"><div className={styles.panelHeading}><div><h2 id="guests-heading">Guest list</h2><p>Keep your invitations organized.</p></div><Link href="/dashboard/guests" className={styles.textLink}>View guests →</Link></div><p className={styles.placeholderText}>{guests?.summary.total ?? 0} guest parties · {guests?.summary.capacity ?? 0} maximum attendees · {guests?.summary.confirmedAttendees ?? 0} confirmed attendees.</p></section>
-                <section className={styles.panel} aria-labelledby="expenses-heading"><div className={styles.panelHeading}><div><h2 id="expenses-heading">Recorded expenses</h2><p>A clearer view of your wedding finances.</p></div><span className={styles.badge}>Coming soon</span></div><p className={styles.placeholderText}>Expense tracking is not available yet.</p></section>
+                <section className={styles.panel} aria-labelledby="expenses-heading"><div className={styles.panelHeading}><div><h2 id="expenses-heading">Recorded expenses</h2><p>A clearer view of your wedding finances.</p></div><Link href="/dashboard/expenses" className={styles.textLink}>View expenses →</Link></div><p className={styles.placeholderText}>{expenses?.count ?? 0} expense records.</p></section>
               </aside>
             </div>
           </>
@@ -106,7 +108,7 @@ export default async function DashboardPage() {
             </div>
             <nav className={styles.footerNav} aria-label="Footer navigation">
               <span>YOUR WEDDING SPACE</span>
-              <div><Link href="/dashboard">Dashboard</Link><Link href="/dashboard/events">Wedding events</Link><Link href="/dashboard/tasks">Tasks</Link>{canViewMembers && <><Link href="/dashboard/guests">Guests</Link><Link href="/dashboard/members">Wedding members</Link></>}</div>
+              <div><Link href="/dashboard">Dashboard</Link><Link href="/dashboard/events">Wedding events</Link><Link href="/dashboard/tasks">Tasks</Link>{canViewMembers && <><Link href="/dashboard/guests">Guests</Link><Link href="/dashboard/expenses">Expenses</Link><Link href="/dashboard/members">Wedding members</Link></>}</div>
             </nav>
           </div>
           <div className={styles.footerBottom}><p>Our Big Day <span aria-hidden="true">·</span> Made for celebrating together</p><p>Plan beautifully, together.</p></div>

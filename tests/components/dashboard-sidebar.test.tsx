@@ -17,6 +17,7 @@ describe("dashboard navigation", () => {
   });
   it("hides the member directory for coordinators", () => {
     render(<DashboardHeader active="events" showMembers={false} />);
+    expect(screen.queryByRole("link", { name: "Expenses" })).not.toBeInTheDocument();
     const nav = within(screen.getByRole("navigation", { name: "Wedding navigation" }));
     expect(nav.queryByRole("link", { name: "Wedding members" })).not.toBeInTheDocument();
     expect(nav.queryByRole("link", { name: "Guests" })).not.toBeInTheDocument();
